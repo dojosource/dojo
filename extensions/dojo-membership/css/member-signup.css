@@ -1,0 +1,128 @@
+.dojo-membership-field {
+    margin: 10px 0 10px 0;
+}
+
+.dojo-membership-field:first-child {
+    margin-top: 0px;
+}
+
+.dojo-membership-field:last-child {
+    margin-bottom: 0px;
+}
+
+.dojo-membership-field button {
+    margin: 10px 0 10px 0;
+}
+
+.dojo-membership-student-block {
+    background-color: #eee;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 20px 0px;
+}
+
+.dojo-membership-center-button {
+    margin: 20px auto;
+    width: 260px;
+}
+
+.dojo-membership-center-coupon {
+    margin: 20px auto;
+    width: 360px;
+}
+
+.dojo-membership-coupon-result {
+    font-weight: bold;
+}
+
+.dojo-membership-terms {
+    margin: 20px 0;
+}
+
+.dojo-membership input[name=terms] {
+    margin-right: 5px;
+}
+
+.dojo-membership label[for=students] {
+    font-weight: bold;
+}
+
+.dojo-membership label[for=coupon] {
+    display: block;
+    text-align: left;
+    margin-top: 60px;
+}
+
+.dojo-membership input[name=coupon] {
+    max-width: 240px;
+    margin-right: 10px;
+}
+
+.dojo-membership-checkout {
+    text-align: center;
+    margin-top: 60px;
+}
+
+.dojo-membership-student-summary {
+    background-color: #eee;
+    margin: 10px 0px;
+    padding: 10px;
+}
+
+.dojo-membership-summary-name {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.dojo-membership-summary-dob {
+    color: #666;
+}
+
+.dojo-membership-summary {
+    margin: 40px 0px;
+}
+
+.dojo-membership-summary-price {
+    font-size: 28px;
+}
+
+.dojo-membership-summary-policy {
+    font-size: 18px;
+    color: #000;
+}
+
+.dojo-membership-charge-day {
+    margin: 40px 0px 10px 0px;
+}
+
+.dojo-membership-checkout-items {
+    max-width: 300px;
+    margin: 0px auto;
+}
+
+.dojo-membership th.dojo-item-amount, .dojo-membership td.dojo-item-amount {
+    width: 100px;
+}
+
+.dojo-membership-totals td {
+    font-weight: bold;
+}
+
+#dojo-membership-charge-day {
+    width: 200px;
+    font-weight: bold;
+}
+
+.dojo-membership ::-webkit-input-placeholder {
+    color: #999;
+}
+.dojo-membership :-moz-placeholder {
+    color: #999;
+}
+.dojo-membership ::-moz-placeholder {
+    color: #999;
+}
+.dojo-membership :-ms-input-placeholder {
+    color: #999;
+}
+

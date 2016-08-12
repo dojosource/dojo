@@ -1,0 +1,85 @@
+.dojo-danger {
+    background-color: #f2dede;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.dojo-warn {
+    background-color: #fcf8e3;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.dojo-info {
+    background-color: #d9edf7;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.dojo-block {
+    background-color: #fff;
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+}
+
+.dojo-block .form-table th {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 140px;
+}
+
+.dojo-block .form-table td {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.dojo-block h3 {
+    margin: 0px;
+}
+
+.dojo .form-table input[type=radio] {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.dojo .form-table input[type=checkbox] {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:visited:active.dojo-red-link {
+    color: #a00;
+}
+.dojo-green {
+    color: #007700;
+}
+
+.dojo-red {
+    color: #a00;
+}
+
+.dojo-clear-space {
+    height: 20px;
+}
+
+.dojo-spacer {
+    height: 20px;
+}
+
+.dojo-left {
+    float: left;
+}
+
+.dojo-left-space {
+    float: left;
+    margin-right: 20px;
+}
+
+.dojo-right {
+    float: right;
+}
+
+.dojo-right-space {
+    float: right;
+    margin-left: 20px;
+}

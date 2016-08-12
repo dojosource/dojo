@@ -1,0 +1,198 @@
+.dojo-field {
+    padding-top: 20px;
+}
+
+.dojo-field label {
+    display: block;
+    float: none;
+}
+
+.dojo-field input[type="text"], .dojo-field input[type="password"] {
+    width: auto;
+}
+
+.dojo-error {
+    background-color: #f2dede;
+    padding: 10px;
+    margin-top: 10px;
+    display: none;
+}
+
+a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:visited:active.dojo-red-link {
+    color: #a00;
+}
+
+@media (min-width: 768px) {
+    .dojo-field {
+        clear: left;
+    }
+
+    .dojo-field label {
+        float: left;
+        width: 180px;
+    }
+    
+    .dojo-field button {
+        margin-left: 180px;
+    }
+
+    .dojo-field input {
+        float: left;
+    }
+}
+
+.dojo-green {
+    color: #007700;
+}
+
+.dojo-red {
+    color: #a00;
+}
+
+.dojo-block {
+    padding: 15px;
+    background-color: #eee;
+}
+
+.dojo-info {
+    padding: 15px;
+    background-color: #d9edf7;
+}
+
+.dojo-warn {
+    padding: 15px;
+    background-color: #fcf8e3;
+}
+
+.dojo-danger {
+    padding: 15px;
+    background-color: #f2dede;
+}
+
+.dojo-select-list {
+    margin-bottom: 20px;
+}
+
+.dojo-select-list-item {
+    position: relative;
+    display: block;
+    padding: .75rem 1.25rem;
+    margin-bottom: -1px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.dojo-select-list-item:hover {
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+.dojo-select-list-item:first-child {
+    border-top-right-radius: .25rem;
+    border-top-left-radius: .25rem;
+}
+
+.dojo-select-list-item:last-child {
+    margin-bottom: 0;
+    border-bottom-right-radius: .25rem;
+    border-bottom-left-radius: .25rem;
+}
+
+.dojo-left {
+    float: left;
+}
+
+.dojo-left-space {
+    float: left;
+    margin-right: 20px;
+}
+
+.dojo-right {
+    float: right;
+}
+
+.dojo-right-space {
+    float: right;
+    margin-left: 20px;
+}
+
+.dojo-text-right {
+    text-align: right;
+}
+
+.dojo-container {
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.dojo-row {
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.dojo-col-md-4, .dojo-col-md-5, .dojo-col-md-6, .dojo-col-md-7, .dojo-col-md-8 {
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+@media (min-width: 992px) {
+    .dojo-col-md-4, .dojo-col-md-5, .dojo-col-md-6, .dojo-col-md-7, .dojo-col-md-8 {
+        float: left;
+    }
+    .dojo-col-md-4 {
+        width: 33.33333333%;
+    }
+
+    .dojo-col-md-5 {
+        width: 41.66666667%;
+    }
+
+    .dojo-col-md-6 {
+        width: 50%;
+    }
+
+    .dojo-col-md-7 {
+        width: 58.33333333%;
+    }
+
+    .dojo-col-md-8 {
+        width: 66.66666667%;
+    }
+
+    .dojo-hide-md {
+        display: none;
+    }
+}
+
+.dojo-clear, .dojo-clear-space {
+    clear: both;
+}
+
+.dojo-clear-space {
+    height: 20px;
+}
+
+.dojo-spacer {
+    height: 20px;
+}
+
+.dojo-dashicons-middle:before {
+    vertical-align: middle;
+}
+
+.dojo ::-webkit-input-placeholder {
+    color: #999;
+}
+.dojo :-moz-placeholder {
+    color: #999;
+}
+.dojo ::-moz-placeholder {
+    color: #999;
+}
+.dojo :-ms-input-placeholder {
+    color: #999;
+}
