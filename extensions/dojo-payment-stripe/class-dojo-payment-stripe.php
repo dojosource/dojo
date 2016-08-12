@@ -88,6 +88,20 @@ class Dojo_Payment_Stripe extends Dojo_Extension {
         return 'ignored';
     }
 
+    public function api_save_source( $is_admin ) {
+        $user = wp_get_current_user();
+
+        if ( $_POST['user_id'] != $user->ID ) {
+            return 'Access denied';
+        }
+
+        $token = $_POST['token'];
+        Stripe\Stripe::setApiKey( $this->get_private_key() );
+
+
+
+    }
+
 
     /**** Webhook Handlers ****/
 

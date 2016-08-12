@@ -15,7 +15,7 @@ $user = $this->current_user;
     <?php endif; ?>
 
     <button class="dojo-add-source">Add Payment Method</button>
-    <div class="dojo-please_wait" style="display:none;">Please wait...</div>
+    <div class="dojo-please-wait" style="display:none;">Please wait...</div>
     <div class="dojo-clear-space"></div>
     <div class="dojo-security-statement">
         <span class="dashicons-before dashicons-lock dojo-dashicons-middle">Secure Payments</span> <a href="https://stripe.com" target="_blank"><img src="<?php echo esc_attr( $this->url( '/images/stripe.png' ) ) ?>" width="119" height="26" style="margin-left:10px;vertical-align:middle;"></a>
@@ -42,10 +42,9 @@ jQuery(function($) {
         $('.dojo-add-source').hide();
         $('.dojo-please-wait').show();
 
-
-        // token.user_id = $invoice->user_id;
-        // $.post('<?php echo $this->ajax( 'save_source' ) ?>', token, function(response) {
-        // });
+        data.user_id = '<?php echo esc_attr( $invoice->user_id ) ?>';
+        $.post('<?php echo $this->ajax( 'save_source' ) ?>', data, function(response) {
+        });
     });
 
     $('.dojo-add-source').click(function() {
