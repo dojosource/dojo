@@ -3,7 +3,7 @@
  * Dojo settings
  */
 
-if ( !defined( 'ABSPATH' ) ) {  die( '-1' ); }
+if ( !defined( 'ABSPATH' ) ) {  die(); }
 
 class Dojo_Settings {
     private static $instance;
@@ -48,7 +48,7 @@ class Dojo_Settings {
      * 
      *  @param string $section_id Section identifier
      *  @param string $title Section title
-     *  @param string $title Html string for subtitle
+     *  @param string $subtitle Html string for subtitle
      *
      *  @return void
      */

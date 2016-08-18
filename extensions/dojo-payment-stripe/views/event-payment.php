@@ -1,11 +1,12 @@
 <?php
-$invoice = $this->current_invoice;
 $sources = $this->sources;
 $user = $this->current_user;
 $customer = $this->current_customer;
+$post_id = $this->current_post_id;
 ?>
 
-<button class="dojo-pay-invoice">Pay Invoice</button>
+<button class="dojo-pay-registration">Register</button>
+
 
 <div class="dojo-payment-form" style="display:none;">
     <div class="dojo-no-sources"<?php echo 0 == count( $sources ) ? '' : ' style="display:none;"' ?>>
@@ -19,7 +20,7 @@ $customer = $this->current_customer;
             <div class="dojo-error dojo-danger"></div>
             <div class="dojo-clear-space"></div>
         </div>
-        <button class="dojo-execute-payment">Pay $<?php echo esc_html( Dojo_Invoice::instance()->dollars( $invoice->amount_cents - $invoice->amount_paid ) ) ?></button>
+        <button class="dojo-execute-payment">Register and Pay</button>
         <button class="dojo-add-source" style="display:none;">Add Payment Method</button>
     </div>
 
@@ -36,17 +37,19 @@ $customer = $this->current_customer;
 <script>
 dojoPayment = new DojoPaymentStripe();
 jQuery(function($) {
-    $('.dojo-pay-invoice').click(function() {
+    $('.dojo-pay-registration').click(function() {
         $(this).hide();
         $('.dojo-payment-form').show();
     });
 
     $('.dojo-execute-payment').click(function() {
+        $('.dojo-error-container').hide();
         var data = {
-            invoice_id: '<?php echo esc_attr( $invoice->ID ) ?>',
-            source_id: $('input[name=source]:checked').val()
+            post_id: '<?php echo esc_attr( $post_id ) ?>',
+            source_id: $('input[name=source]:checked').val(),
+            line_items: dojoCheckoutGetLineItems()
         };
-        $.post('<?php echo $this->ajax( 'user_execute_payment' ) ?>', data, function(response) {
+        $.post('<?php echo $this->ajax( 'user_execute_event_payment' ) ?>', data, function(response) {
             if (response == 'success') {
                 window.location.reload();
             }
@@ -97,7 +100,6 @@ jQuery(function($) {
 
     $('.dojo-add-source').click(function() {
         var email = '<?php echo esc_attr( $user->user_email ) ?>';
-        var invoice = '<?php echo esc_attr( $invoice->description ) ?>';
         var site_name = '<?php echo esc_attr( bloginfo( 'name' ) ) ?>';
 
         dojoPayment.open( site_name, 'Payment Method', email, 'Add Card' );
@@ -109,7 +111,7 @@ jQuery(function($) {
         $('.dojo-some-sources, .dojo-no-sources').hide();
         $('.dojo-please-wait').show();
 
-        data.user_id = '<?php echo esc_attr( $invoice->user_id ) ?>';
+        data.user_id = '<?php echo esc_attr( $user->ID ) ?>';
         $.post('<?php echo $this->ajax( 'save_source' ) ?>', data, function(response) {
             var data = eval('(' + response + ')');
             if (data.result == 'success') {
@@ -137,3 +139,4 @@ jQuery(function($) {
     });
 });
 </script>
+

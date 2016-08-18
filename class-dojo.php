@@ -102,7 +102,10 @@ final class Dojo extends Dojo_WP_Base {
      * Register custom pages 
      *
      * @param string $slug Root level slug
-     * @param string $shortcode Shortcode that will render custom pages under the slug.
+     * @param mixed $render_callback
+     * @param mixed $title_callback
+     *
+     * @return void
      */
     public function register_custom_page( $slug, $render_callback, $title_callback ) {
         $this->custom_pages[ $slug ] = array (
@@ -155,7 +158,7 @@ final class Dojo extends Dojo_WP_Base {
      * Get parameter, "method" will be prefixed with api_ to resolve to a method on that class.
      * A bool flag is passed to the method to indicate admin privs.
      * If the method returns a string the string will be echoed out in the response.
-     * If the method returns an array it will be converted to JSON and echoed.
+     * If the method returns an array or object it will be converted to JSON and echoed.
      *
      * See Dojo_Extension::ajax for example of generating ajax urls
      */
@@ -170,7 +173,7 @@ final class Dojo extends Dojo_WP_Base {
                     $result = call_user_func( array( $instance, $method ), $is_admin );
                     if ( is_string( $result ) ) {
                         echo $result;
-                    } elseif ( is_array( $result ) ) {
+                    } elseif ( is_array( $result ) || is_object( $result ) ) {
                         echo json_encode( $result );
                     }
 
@@ -235,7 +238,7 @@ final class Dojo extends Dojo_WP_Base {
 
                 // get title using callback
                 $title = call_user_func( $callbacks['title_callback'], $path );
-               
+
                 // create custom post object to represent the page
                 $page = get_post( (object) array(
                     'ID'                    => 0,
@@ -249,7 +252,13 @@ final class Dojo extends Dojo_WP_Base {
                     'post_type'             => 'page',
                 ) );
 
-                return array ( $page );
+                // configure wp_query
+                $wp_query->is_home = false;
+                $wp_query->is_page = true;
+                $wp_query->queried_object = $page;
+                $wp_query->max_num_pages = 1;
+
+                return array( $page );
             }
         }
 

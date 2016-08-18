@@ -1,44 +1,46 @@
 .dojo-field {
-    padding-top: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
-.dojo-field label {
+.dojo-field label, .dojo-field .dojo-name {
     display: block;
     float: none;
+    font-weight: bold;
 }
 
-.dojo-field input[type="text"], .dojo-field input[type="password"] {
+.dojo-field input[type="text"], .dojo-field input[type="password"], .dojo-field .dojo-value {
     width: auto;
 }
 
-.dojo-error {
-    background-color: #f2dede;
-    padding: 10px;
-    margin-top: 10px;
-    display: none;
-}
-
-a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:visited:active.dojo-red-link {
-    color: #a00;
-}
 
 @media (min-width: 768px) {
     .dojo-field {
         clear: left;
     }
 
-    .dojo-field label {
+    .dojo-field label, .dojo-field .dojo-name {
         float: left;
-        width: 180px;
+        width: 200px;
     }
     
     .dojo-field button {
-        margin-left: 180px;
+        margin-left: 200px;
     }
 
-    .dojo-field input {
+    .dojo-field input, .dojo-field .dojo-value {
         float: left;
     }
+}
+
+.dojo-error {
+    background-color: #f2dede;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:visited:active.dojo-red-link {
+    color: #a00;
 }
 
 .dojo-green {

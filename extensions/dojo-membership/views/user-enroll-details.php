@@ -15,7 +15,7 @@ $contract_programs = $this->contract_programs;
     <p><?php echo $price_plan->describe( 'membership' ) ?></p>
     
     <h3>Cancellation Policy</h3>
-    <p>todo - implement</p>
+    <p><?php echo $this->describe_cancellation_policy( $contract ) ?></p>
 
     <h3>Programs</h3>
     <p>The following programs are included in this membership</p>

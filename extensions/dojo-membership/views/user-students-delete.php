@@ -24,7 +24,7 @@ $student = $this->current_student;
         </div>
         <div class="dojo-clear"></div>
         <?php if ( null !== $student->current_membership_id ) : ?>
-        <p>Todo - info about current membership</p>
+        <p><?php echo esc_html( $this->describe_status( $student->status ) ) ?></p>
         <?php else : ?>
         <div>Not enrolled in any programs.</div>
         <?php endif; ?>

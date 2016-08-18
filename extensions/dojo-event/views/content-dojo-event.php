@@ -1,3 +1,7 @@
+<?php
+$post = $this->post;
+?>
+
 <h1>
     <?php echo $post->post_title ?>
     <br>

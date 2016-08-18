@@ -120,7 +120,7 @@ jQuery(function($) {
         }
         $.post('<?php echo $this->ajax('save_enrollment') ?>', data, function(response) {
             var lineItems = eval('(' + response + ')');
-            dojoSetLineItems(lineItems);
+            dojoCheckoutSetLineItems(lineItems);
             if (0 == lineItems.length) {
                 $('.dojo-monthly-pricing').hide();
             }

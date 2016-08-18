@@ -7,15 +7,15 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
     private static $instance;
 
     // table names
-    private $students;
-    private $memberships;
-    private $membership_alerts;
-    private $programs;
-    private $contracts;
-    private $contract_programs;
-    private $documents;
-    private $contract_documents;
-    private $membership_contract_documents;
+    public $students;
+    public $memberships;
+    public $membership_alerts;
+    public $programs;
+    public $contracts;
+    public $contract_programs;
+    public $documents;
+    public $contract_documents;
+    public $membership_contract_documents;
 
     protected function __construct() {
         global $wpdb;

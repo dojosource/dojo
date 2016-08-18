@@ -52,6 +52,12 @@ class Dojo_Membership extends Dojo_Extension {
     const MEMBERSHIP_ENDED = 'ended';
 
 
+    /**** Cancellation Policies ****/
+    const CANCELLATION_NONE     = 'none';
+    const CANCELLATION_ANYTIME  = 'anytime';
+    const CANCELLATION_DAYS     = 'days';
+
+
     /**** User Dashboard Block Positions ****/
 
     const USER_DASHBOARD_LEFT  = 'left';
@@ -131,14 +137,18 @@ class Dojo_Membership extends Dojo_Extension {
             ) );
 
             // notify admin of new user
-            $adminEmail = get_option( 'admin_email' );
-            wp_mail( $adminEmail, 'New Member Login '.time(), '
+            try {
+                $adminEmail = get_option( 'admin_email' );
+                wp_mail( $adminEmail, 'New Member Login '.time(), '
 New Member Login Created
 Name: '.$_POST['firstname'].' '.$_POST['lastname'].'
 Username: '.$_POST['username'].'
 Email: '.$_POST['email'].'
 Phone: '.$_POST['phone']
-            );
+                );
+            } catch ( Exception $ex ) {
+                debug( 'Error sending email ' . $ex->getMessage() );
+            }
 
             echo 'success';
         }
@@ -477,6 +487,7 @@ Phone: '.$_POST['phone']
         }
 
         $contracts = $this->model()->get_user_contracts( $user->ID );
+        $new_students = array();
         foreach ( $contracts as $contract ) {
 
             // only dealing with pending membership contracts
@@ -489,6 +500,10 @@ Phone: '.$_POST['phone']
                 continue;
             }
 
+            $student = $this->model()->get_student( $students[ $contract->student_id ] );
+            $student->contract = $contract;
+            $new_students[] = $student;
+
             // change state to submitted
             $this->model()->update_membership( $contract->membership_id, array( 'status' => self::MEMBERSHIP_SUBMITTED ) );
 
@@ -497,11 +512,69 @@ Phone: '.$_POST['phone']
             do_action( 'dojo_membership_submit_application', $membership );
         }
 
-        // todo - send notification to admin and confirmation to user
+        // todo - send confirmation to user
+
+
+        try {
+            $adminEmail = get_option( 'admin_email' );
+            $message = '
+New Member Application
+
+Account: ' . $user->first_name . ' ' . $user->last_name . '
+Email: ' . $user->user_email . '
+Phone: ' . get_user_meta( $user->ID, 'phone', true ) . '
+';
+            foreach ( $new_students as $student ) {
+                $message .= '
+Student Name: ' . $this->student_name( $student ) . '
+DOB: ' . date( 'm/d/Y', strtotime( $student->dob ) ) . '
+Membership: ' . $student->contract->title . '
+
+';
+            }
+            wp_mail( $adminEmail, 'New Member Application '.time(), $message );
+        } catch ( Exception $ex ) {
+            debug( 'Error sending email ' . $ex->getMessage() );
+        }
 
         // redirect path can be overridden with a filter
         $url = apply_filters( 'dojo_membership_submit_application_redirect', $this->membership_url( '?application_submitted' ) );
         wp_redirect( $url );
+    }
+
+    public function api_cancel_membership( $is_admin ) {
+        $user = wp_get_current_user();
+
+        $membership = $this->model()->get_membership( $_POST['membership_id'] );
+        if ( ! $membership ) {
+            return 'Invalid membership';
+        }
+
+        $student = $this->model()->get_student( $membership->student_id );
+        if ( ! $student || $user->ID != $student->user_id ) {
+            return 'Invalid membership or access denied';
+        }
+
+        if ( $membership->ID != $student->current_membership_id ) {
+            return 'Membership is not active';
+        }
+
+        $contract = $this->model()->get_contract( $membership->contract_id );
+        if ( self::CANCELLATION_ANYTIME == $contract->cancellation_policy ) {
+            $cancel_execute_date = current_time( 'mysql' );
+        } elseif ( self::CANCELLATION_DAYS == $contract->cancellation_policy ) {
+            $cancel_execute_date = date( 'm/d/Y', time() + $contract->cancellation_days );
+        } else {
+            return 'Cancellation not permitted';
+        }
+
+        $this->model()->update_membership( $membership->ID, array(
+            'cancel_request_date'   => current_time( 'mysql' ),
+            'cancel_execute_date'   => $cancel_execute_date,
+            'status'                => self::MEMBERSHIP_CANCELED,
+        ));
+
+        return 'success';
     }
 
 
@@ -785,6 +858,11 @@ Phone: '.$_POST['phone']
             case '/students/edit' :
                 if ( isset( $_GET['student'] ) ) {
                     $this->current_student = $this->model()->get_student( $_GET['student'] );
+                    $this->current_membership = $this->model()->get_student_membership( $_GET['student'] );
+                    if ( $this->current_membership->contract_id ) {
+                        $this->current_contract = $this->model()->get_contract( $this->current_membership->contract_id );
+                        $this->contract_programs = $this->model()->get_contract_programs( $this->current_membership->contract_id );
+                    }
                 }
                 echo $this->render( 'user-students-edit' );
                 return true;
@@ -1000,7 +1078,7 @@ Phone: '.$_POST['phone']
             case self::MEMBERSHIP_NA            : return 'Membership not started';
             case self::MEMBERSHIP_PENDING       : return 'Membership application not complete';
             case self::MEMBERSHIP_SUBMITTED     : return 'Membership application submitted';
-            case self::MEMBERSHIP_PAID         : return 'Payment received, waiting for approval';
+            case self::MEMBERSHIP_PAID          : return 'Payment received, waiting for approval';
             case self::MEMBERSHIP_ACTIVE        : return 'Membership is active';
             case self::MEMBERSHIP_FROZEN        : return 'Membership is frozen';
             case self::MEMBERSHIP_DUE           : return 'Payment is past due';
@@ -1009,6 +1087,72 @@ Phone: '.$_POST['phone']
             case self::MEMBERSHIP_ENDED         : return 'Membership ended';
             default                             : return 'Membership status unknown';
         }
+    }
+
+    /**
+     * Get human readable description of cancellation policy
+     *
+     * @param object $contract
+     *
+     * @return string
+     */
+    public function describe_cancellation_policy( $contract ) {
+        switch ( $contract->cancellation_policy ) {
+            case self::CANCELLATION_ANYTIME :
+                return 'Cancel at any time.';
+
+            case self::CANCELLATION_DAYS :
+                return $contract->cancellation_days . ' days notice required to cancel.';
+
+            case self::CANCELLATION_NONE :
+                return 'No cancellations';
+        }
+
+        return 'Cancellation policy not set.';
+    }
+
+    /**
+     * Check if given status is active in the sense that the student may continue to participate
+     *
+     * @param string $status
+     *
+     * @return bool
+     */
+    public function is_status_active( $status ) {
+        return
+            self::MEMBERSHIP_ACTIVE         == $status ||
+            self::MEMBERSHIP_DUE            == $status ||
+            self::MEMBERSHIP_CANCELED       == $status ||
+            self::MEMBERHSIP_CANCELED_DUE   == $status
+            ;
+    }
+
+    /**
+     * Check if status is in a canceled state
+     *
+     * @param string $status
+     *
+     * @return bool
+     */
+    public function is_status_canceled( $status ) {
+        return
+            self::MEMBERSHIP_CANCELED       == $status ||
+            self::MEMBERHSIP_CANCELED_DUE   == $status
+            ;
+    }
+
+    /**
+     * Check if status has at least reached the submitted stage. Could be anything past submitted.
+     *
+     * @param string $status
+     *
+     * @return bool
+     */
+    public function is_status_submitted( $status ) {
+        return
+            self::MEMBERSHIP_NA         != $status &&
+            self::MEMBERSHIP_PENDING    != $status
+            ;
     }
 
     /**
@@ -1026,6 +1170,16 @@ Phone: '.$_POST['phone']
             $response[ $contract->ID ]->pricing = new Dojo_Price_Plan( $contract->family_pricing );
         }
         return $response;
+    }
+
+    /**
+     * Gets students for current user
+     *
+     * @return array( object )
+     */
+    public function get_current_students() {
+        $user = wp_get_current_user();
+        return $this->model()->get_user_students( $user->ID );
     }
 
     /**

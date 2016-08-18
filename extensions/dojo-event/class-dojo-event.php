@@ -8,8 +8,6 @@ if ( ! defined( 'ABSPATH' ) ) { die(); }
 class Dojo_Event extends Dojo_Extension {
     private static $instance;
 
-    protected $extension_folder;
-    protected $views_folder;
     protected $head_complete = false;
 
     public $singular = 'event';
@@ -20,8 +18,20 @@ class Dojo_Event extends Dojo_Extension {
     protected function __construct() {
         parent::__construct( 'Events' );
 
-        $this->extension_folder = plugin_dir_path( __FILE__ );
-        $this->views_folder = $this->extension_folder . 'views/';
+        $this->register_action_handlers( array(
+            'init',
+            'add_meta_boxes',
+            'admin_enqueue_scripts',
+            'dojo_invoice_line_item_paid',
+            array( 'wp_enqueue_scripts', 20 ),
+            array( 'save_post', 1, 2 ),
+        ) );
+
+        $this->register_filters( array(
+            'template_include',
+            'manage_edit-dojo_event_columns',
+            array( 'wp_head', 0xFFFF ),
+        ) );
     }
 
     public static function instance() {
@@ -31,76 +41,14 @@ class Dojo_Event extends Dojo_Extension {
         return self::$instance;
     }
 
-    public function register() {
-        add_action( 'init', array( $this, 'handle_init' ) );
-        add_action( 'add_meta_boxes', array ( $this, 'handle_add_meta_boxes' ) );
-        add_action( 'admin_enqueue_scripts', array ( $this, 'handle_admin_enqueue_scripts' ) );
-        add_action( 'wp_enqueue_scripts', array ( $this, 'handle_enqueue_scripts' ), 20 );
-        add_action( 'save_post', array ( $this, 'handle_save_post' ), 1, 2 );
 
-        // filter to do full replacement or injuection of event template
-        add_filter( 'template_include', array ( $this, 'filter_template_include' ) );
-
-        // add action to end of head processing to note when it is done rendering
-        add_action( 'wp_head', array( $this, 'handle_wp_head_complete' ), 0xFFFF );
-
-    }
-
-    public function get_event_cost_description() {
-        $price = array();
-        $price_count = array();
-        $num_rules = 1;
-
-        // get all the price rules
-        for ( $rule = 1; $rule <= 5; $rule ++ ) {
-            $price[ $rule ]       = $this->get_meta( 'registration_price' . $rule );
-            $price_count[ $rule ] = $this->get_meta( 'registration_price_count' . $rule );
-            if ( $price_count[ $rule ] > 0 ) {
-                $num_rules ++;
-            } else {
-                break;
-            }
-        }
-
-        // construct human readable version of cost rules
-        if ( 0 == $num_rules) {
-            return 'There is no cost to register for this ' . $this->singular . '.';
-        } elseif ( 1 == $num_rules ) {
-            return 'Registration is $' . $price[ 1 ] . ' per person.';
-        } else {
-            $text = 'Registration is $';
-            for ( $rule = 1; $rule <= 5 ; $rule ++ ) {
-                if ( $rule > 1 ) {
-                    if ( 0 == $price[ $rule ] ) {
-                        $text .= ', then no cost for ';
-                    } else {
-                        $text .= ', then $';
-                    }
-                }
-
-                if ( 0 != $price[ $rule ] ) {
-                    $text .= $price[ $rule ] . ' for ';
-                }
-
-                if ( $price_count[ $rule ] > 1 ) {
-                    $text .= 'the ' . ( 1 == $rule ? 'first ' : 'next ' ) . $price_count[ $rule ] . ' family members';
-                } elseif ( 1 == $price_count[ $rule ] ) {
-                    $text .= 'the ' . ( 1 == $rule ? 'first ' : 'next ' ) . 'family member';
-                } else {
-                    $text .= 'each additional family member.';
-                    break;
-                }
-            }
-            return $text;
-        }
-
-    }
+    /**** Action Handlers ****/
 
     public function handle_init() {
         $labels = array(
             'name'               => 'Events',
             'singular_name'      => 'Event',
-            'menu_name'          => 'Events',
+            'menu_name'          => 'Dojo Events',
             'name_admin_bar'     => 'Event',
             'add_new'            => 'Add New',
             'add_new_item'       => 'Add New Event',
@@ -126,6 +74,8 @@ class Dojo_Event extends Dojo_Extension {
             'taxonomies' => array( 'post_tag' ),
             'map_meta_cap' => true,
             'has_archive' => true,
+            'menu_icon' => 'dashicons-calendar',
+            'menu_position' => 4
         );
 
         register_post_type( 'dojo_event', $args );
@@ -138,24 +88,25 @@ class Dojo_Event extends Dojo_Extension {
 
     public function handle_admin_enqueue_scripts() {
         // register plugin scripts
-        wp_register_script( 'dojo-event-edit', plugins_url( 'js/event-edit.js', __FILE__ ) );
+        wp_register_script( 'dojo-event-edit', $this->url( 'js/event-edit.js' ) );
 
+        // TODO - Move these into the views so they only enqueue when needed
         // enqueue scripts
         wp_enqueue_script( 'dojo-event-edit' );
         wp_enqueue_script( 'jquery-ui-datepicker' );
-        wp_enqueue_script( 'dojo-event-edit' );
 
         // enqueue styles
         wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css' );
     }
 
-    public function handle_enqueue_scripts() {
+    public function handle_wp_enqueue_scripts() {
         // register plugin scripts
         wp_register_script( 'dojo-event', plugins_url( 'js/event.js', __FILE__ ) );
 
         // register plugin styles
         wp_register_style( 'dojo-event', plugins_url( 'css/dojo-event.css', __FILE__ ) );
 
+        // TODO - Move these into the views so they only enqueue when needed
         // enqueue scripts
         wp_enqueue_script( 'dojo-event' );
 
@@ -163,7 +114,7 @@ class Dojo_Event extends Dojo_Extension {
         wp_enqueue_style( 'dojo-event' );
     }
 
-    public function handle_save_post($post_id, $post) {
+    public function handle_save_post( $post_id, $post ) {
         // verify contains expected elements
         if ( ! isset( $_POST['dojo_event_nonce'] ) || ! isset( $_POST['schedule'] ) || ! isset( $_POST['registration'] ) ) {
             return;
@@ -195,16 +146,6 @@ class Dojo_Event extends Dojo_Extension {
                 'enable_limit',
                 'limit',
                 'enable_payment',
-                'price1',
-                'price_count1',
-                'price2',
-                'price_count2',
-                'price3',
-                'price_count3',
-                'price4',
-                'price_count4',
-                'price5',
-                'price_count5',
             ),
         );
 
@@ -220,14 +161,18 @@ class Dojo_Event extends Dojo_Extension {
                 }
             }
         }
+
+        $price_plan = new Dojo_Price_Plan();
+        $price_plan->handle_post();
+        update_post_meta( $post_id, 'registration_price', (string) $price_plan );
     }
 
-    public function handle_wp_head_complete() {
+    public function filter_wp_head() {
         $this->head_complete = true;
     }
 
     public function handle_loop_start( $query ) {
-        if ($query->is_main_query() && $this->head_complete) {
+        if ( $query->is_main_query() && $this->head_complete ) {
             // override the post with an empty placeholder
             add_action( 'the_post', array( $this, 'handle_the_post' ) );
 
@@ -278,26 +223,57 @@ class Dojo_Event extends Dojo_Extension {
         remove_action( 'the_post', array( $this, 'handle_the_post' ) );
     }
 
+    public function handle_dojo_invoice_line_item_paid( $line_item ) {
+         $meta = unserialize( $line_item->meta );
+
+        if ( is_array( $meta ) ) {
+            if ( isset( $meta['is_event_registration'] ) && $meta['is_event_registration'] ) {
+                $post = get_post( $meta['event_id'] );
+                if ( 'dojo_event' == $post->post_type ) {
+                    $student = Dojo_Membership::instance()->model()->get_student( $meta['student_id'] );
+                    if ( $student ) {
+                        $meta['user_id'] = $student->user_id;
+                        $this->model()->create_registrant( $meta['event_id'], $meta );
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Filter content by complete override
+     *
+     * @return string
+     */
     public function filter_the_content_override() {
         // unregister filter so we only do this once
         remove_filter( 'the_content', array( $this, 'filter_the_content_override' ) );
 
         // render view
-        $post = $this->post;
-        ob_start();
-        include $this->views_folder . 'content-dojo-event.php';
-        return ob_get_clean();
+        return $this->render( 'content-dojo-event' );
     }
 
+    /**
+     * Filter content by extending it
+     *
+     * @param string $content
+     *
+     * @return string
+     */
     public function filter_the_content_extend( $content ) {
-        $post = $GLOBALS[ 'post' ];
+        $user = wp_get_current_user();
+        $this->students = Dojo_Membership::instance()->get_current_students();
+        $this->registrants = $this->model()->get_event_registrants( $this->post->ID );
+        $this->user_registrants = $this->model()->get_event_user_registrants( $this->post->ID, $user->ID );
+
+        if ( current_user_can( 'manage_options' ) ) {
+            $this->is_manager = true;
+        } else {
+            $this->is_manager = false;
+        }
 
         // render extended content
-        ob_start();
-        include $this->views_folder . 'extend-content.php';
-
-        // return extended content appended to original content
-        return $content . ob_get_clean();
+        return $content . $this->render( 'extend-content' );
     }
 
     public function filter_template_include( $template ) {
@@ -306,45 +282,102 @@ class Dojo_Event extends Dojo_Extension {
         // todo - option to select method of replacement
         $mode = 'extend';
 
-        if ( $wp_query->query[ 'post_type' ] == 'dojo_event') {
+        if ( isset( $wp_query->query['post_type'] ) && 'dojo_event' == $wp_query->query['post_type'] ) {
            
-            if ( $mode == 'full' ) {
-                $template = $this->views_folder . 'single-dojo-event.php';
-            } elseif ( $mode == 'inject' ) {
+            if ( 'full' == $mode ) {
+                // use our own template in place of the theme template
+                $template = $this->path( 'views/single-dojo-event.php' );
+            } elseif ( 'inject' == $mode ) {
                 // handle loop start to hijack and inject event render into content of theme template
                 add_action( 'loop_start', array( $this, 'handle_loop_start' ) );
-            } elseif ( $mode == 'extend' ) {
+            } elseif ( 'extend' == $mode ) {
+                // theme handles the render, we just append extra content to title and page content
                 add_filter( 'the_content', array( $this, 'filter_the_content_extend' ) );
 
+                // make post render as a page
                 $post = $GLOBALS[ 'post' ];
-
-                // make post render as page which is usually without author and create date
                 $post->post_type = 'page';
 
                 // inject date  and start time into title
-                $date = strtotime( $this->get_meta( 'schedule_date' ) );
-                $hour = $this->get_meta( 'schedule_start_hour' );
-                $min = $this->get_meta( 'schedule_start_minute' );
-                $mer = $this->get_meta( 'schedule_start_is_pm' ) ? 'pm' : 'am';
-                if ( 1 == strlen( $min ) ) {
-                    $min = '0' . $min;
-                }
                 $post->post_title .= '<br><span class="dojo-event-start" style="font-size:.6em;">' . self::get_formatted_start_time( $post ) . '</span>';
+
+                $this->post = $post;
             }
         }
 
         return $template;
     }
 
-    protected function get_meta( $key, $default = '' ) {
-        global $post;
+    public function filter_manage_edit_dojo_event_columns( $columns ) {
+        return array(
+            'cb'            => '<input type="checkbox" />',
+            'title'         => 'Title',
+            'registrants'   => 'Registered',
+            'reg_limit'     => 'Limit',
+            'date'          => 'Date',
+        );
+    }
 
-        if ( ! in_array( $key, get_post_custom_keys( $post->ID ) ) ) {
+
+    /**** Ajax Handlers ****/
+
+    public function api_get_line_items( $is_admin ) {
+        // set post context
+        $GLOBALS['post'] = get_post( $_POST['post_id'] );
+
+        $user = wp_get_current_user();
+        $user_registrants = $this->model()->get_event_user_registrants( $_POST['post_id'], $user->ID );
+
+        $line_items = array();
+
+        if ( is_array( $_POST['students'] ) ) {
+            $price_plan = new Dojo_Price_Plan( $this->get_meta( 'registration_price' ) );
+
+            // account for family members already registered in pricing
+            $person = 1 + count( $user_registrants );
+
+            foreach ( $_POST['students'] as $student_id ) {
+                $student = Dojo_Membership::instance()->model()->get_student( $student_id );
+                $price = $price_plan->get_price( $person ++ );
+                $line_item = array(
+                    'amount_cents'  => $price * 100,
+                    'description'   => $student->first_name . ' ' . $student->last_name,
+                    'id'            => $student->ID,
+                );
+                $line_items[] = $line_item;
+            }
+
+        }
+        return $line_items;
+    }
+
+    public function api_register( $is_admin ) {
+        // set post context
+        $GLOBALS['post'] = get_post( $_POST['post_id'] );
+
+        // todo registration without invoice+payments extensions
+    }
+
+
+    /**** Utility ****/
+
+    protected function get_meta( $key, $default = '' ) {
+        $post = $GLOBALS['post'];
+
+        $keys = get_post_custom_keys( $post->ID );
+        if ( ! is_array( $keys ) || ! in_array( $key, $keys ) ) {
             return $default;
         }
         return get_post_meta( $post->ID, $key, true );
     }
 
+    /**
+     * Get start time of an event post with nice formatting. If no event specified will use global $post.
+     *
+     * @param object $event
+     *
+     * @return string
+     */
     public static function get_formatted_start_time( $event = null ) {
         global $post;
         if ( null === $event ) {
@@ -359,16 +392,16 @@ class Dojo_Event extends Dojo_Extension {
             $min = '0' . $min;
         }
 
-        return date( 'l, M nS', $date ) . " @$hour:$min $mer";
+        return date( 'l, M jS', $date ) . " @$hour:$min $mer";
     }
 
     public function render_edit_event_schedule() {
-        wp_nonce_field( basename( __FILE__ ), 'dojo_event_nonce');
-        include $this->views_folder . 'edit_event_schedule.php';
+        wp_nonce_field( basename( __FILE__ ), 'dojo_event_nonce' );
+        include $this->path( 'views/edit-event-schedule.php' );
     }
 
     public function render_edit_event_registration() {
-        include $this->views_folder . 'edit_event_registration.php';
+        include $this->path( 'views/edit-event-registration.php' );
     }
 }
 

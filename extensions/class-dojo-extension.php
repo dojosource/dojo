@@ -49,17 +49,18 @@ class Dojo_Extension extends Dojo_WP_base {
 
     /**
      * Gets the path of the derived extension with trailing slash
+     * @param string $file Optional relative path file to append
      *
      * @return string
      */
-    protected function path() {
+    protected function path( $file = '' ) {
         $class = get_class( $this );
-        return plugin_dir_path( __FILE__ ) . str_replace( '_', '-', strtolower( $class )) . '/';
+        return plugin_dir_path( __FILE__ ) . str_replace( '_', '-', strtolower( $class )) . '/' . $file;
     }
 
     /**
      * Gets the url of the derived extension with trailing slash and optionally appended file
-     * @param $file string Optional relative path file to append
+     * @param string $file Optional relative path file to append
      * 
      * @return string
      */

@@ -1,83 +1,68 @@
 jQuery(function($) {
   var params = $('.dojo-register').data('params');
-  var $itemTemplate = $('.dojo-template.dojo-checkout-item');
-  var numReg = 0;
-
-  function addStudent(id) {
-    var $item = $itemTemplate.clone();
-    $item.removeClass('dojo-template');
-    $item.show();
-
-    var price = 20;
-    numReg++;
-
-    var student = params.students[id];
-    $item.find('.dojo-item-description').text(student.firstName + ' ' + student.lastName + ' Registration');
-    $item.attr('data-student', id);
-    $item.data('price', price);
-    $('.dojo-checkout-items .dojo-totals').before($item);
-
-    updatePrices();
-  }
-
-  function removeStudent(id) {
-    var student = params.students[id];
-
-    var $item = $('.dojo-checkout-item[data-student=' + id + ']');
-    if ($item) {
-      numReg--;
-    }
-    $item.remove();
-
-    updatePrices();
-  }
+  var students = [];
 
   function updatePrices() {
-    var rule = 1;
-    var ruleCount = 1;
-    var total = 0;
-    $('.dojo-checkout-item').not('.dojo-template').each(function() {
-      var price = parseFloat(params.price[rule]);
-      total += price;
-      $(this).find('.dojo-item-amount').text('$' + price.toFixed(2));
-      if (ruleCount >= params.price_count[rule]) {
-        rule++;
-        ruleCount = 1;
+    students = [];
+    var remaining_students = [];
+    $('.dojo-student-item input').each(function() {
+      var student_id = $(this).attr('data-student');
+      if ($(this).is(':checked')) {
+        students.push(student_id);
       }
       else {
-        ruleCount++;
+        remaining_students.push(student_id);
       }
     });
-    $('.dojo-totals .dojo-item-amount').text('$' + total.toFixed(2));
+
+    var data = {
+      post_id: params.post_id,
+      students: students
+    };
+    $.post(params.get_line_items_url, data, function(response) {
+      var lineItems = eval('(' + response + ')');
+      dojoCheckoutSetLineItems(lineItems);
+      if (students.length > 0) {
+        $('.dojo-checkout-container').show();
+      }
+      else {
+        $('.dojo-checkout-container').hide();
+      }
+      if (students.length >= params.remaining_spots && remaining_students.length) {
+        $('.dojo-reg-limit-reached').show();
+        $('.dojo-student-item input').not(':checked').attr('disabled', true);
+      }
+      else {
+        $('.dojo-reg-limit-reached').hide();
+        $('.dojo-student-item input').attr('disabled', false);
+      }
+    });
   }
 
   $('.dojo-student-item input').change(function() {
-    if ($(this).is(':checked')) {
-      addStudent($(this).attr('data-student'));
-    }
-    else {
-      removeStudent($(this).attr('data-student'));
-    }
-
-    var remainingItems = $('.dojo-checkout-item').not('.dojo-template');
-    if (remainingItems.length == 0) {
-      $('.dojo-checkout-items').hide('fast');
-    }
-    else {
-      $('.dojo-checkout-items').show('fast');
-    }
+    updatePrices();
   });
 
-  $('#dojo-register').click(function() {
-    $(this).hide();
-    $('.dojo-pre-register-click').hide();
-    $('.dojo-checkout-items').show('fast');
+  $('#dojo-complete-registration').click(function() {
+    var button = $(this);
+    button.hide();
+    $('.dojo-please-wait').show();
+    data = {
+      post_id: params.post_id,
+      students: students
+    };
+    $.post(params.registration_url, data, function(response) {
+      $('.dojo-please-wait').hide();
+      console.log('resonse', response);
+      if (response != 'success') {
+        $('.dojo-registration-error').text(response);
+        $('.dojo-error-container').show();
+        button.show();
+      }
+      else {
+        $('.dojo-error-container').hide();
+      }
+    });
   });
-
-  if (1 == params.num_students) {
-    for (var id in params.students) {
-      addStudent(id);
-    }
-  }
 });
 

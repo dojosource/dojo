@@ -19,8 +19,9 @@ class Dojo_Payment_Stripe extends Dojo_Extension {
         ) );
 
         $this->register_filters( array (
-            'dojo_invoice_payment',
-        ), 10, 2 );
+            array( 'dojo_event_register_button', 10, 2 ),
+            array( 'dojo_invoice_payment', 10, 2 ),
+        ) );
     }
 
     public static function instance() {
@@ -95,11 +96,221 @@ class Dojo_Payment_Stripe extends Dojo_Extension {
             return 'Access denied';
         }
 
+        $is_live = $this->is_live();
         $token = $_POST['token'];
-        Stripe\Stripe::setApiKey( $this->get_private_key() );
+        Stripe\Stripe::setApiKey( $this->get_secret_key() );
 
+        $customer = $this->model()->get_user_customer( $user->ID, $is_live );
+        if ( ! $customer ) {
+            // create new customer object for this user
+            $stripe_customer = Stripe\Customer::create( array(
+                'source' => $token['id'],
+                'description' => $user->ID . ' ' . $user->first_name . ' ' . $user->last_name,
+                'email' => $user->user_email
+            ) );
+            $source = $stripe_customer->sources->data[0];
 
+            $this->model()->create_customer( $user->ID, $stripe_customer );
+            $this->model()->create_source( $source );
+        } else {
+            $stripe_customer = \Stripe\Customer::retrieve( $customer->customer_id );
+            $source = $stripe_customer->sources->create( array(
+                'source' => $token['id'],
+            ) );
+            $this->model()->create_source( $source );
 
+            // set new source as default
+            $stripe_customer->default_source = $source->id;
+            $stripe_customer->save();
+
+            // save customer info
+            $this->model()->update_customer( $stripe_customer );
+        }
+
+        $this->current_customer = $this->model()->get_user_customer( $user->ID, $is_live );
+        $this->sources = $this->model()->get_customer_payment_methods( $this->current_customer->customer_id );
+
+        $response = array(
+            'result'        => 'success',
+            'num_sources'   => count( $this->sources ),
+            'render'        => $this->render( 'source-select' ),
+        );
+
+        return $response;
+    }
+
+    public function api_delete_source( $is_admin ) {
+        $user = wp_get_current_user();
+
+        // validate source
+        $source = $this->model()->get_source( $_POST['source_id'] );
+        if ( ! $source || $user->ID != $source->user_id ) {
+            return 'Invalid payment method';
+        }
+
+        $is_live = $this->is_live();
+        $token = $_POST['token'];
+        Stripe\Stripe::setApiKey( $this->get_secret_key() );
+
+        $customer = $this->model()->get_user_customer( $user->ID, $is_live );
+        if ( ! $customer ) {
+            return 'Customer does not exist';
+        }
+
+        $stripe_customer = Stripe\Customer::retrieve( $customer->customer_id );
+        $stripe_customer->sources->retrieve( $source->source_id )->delete();
+
+        // get updated customer
+        $stripe_customer = Stripe\Customer::retrieve( $customer->customer_id );
+
+        // delete source from database
+        $this->model()->delete_source( $source->source_id );
+
+        // update customer in database
+        $this->model()->update_customer( $stripe_customer );
+
+        $this->current_customer = $this->model()->get_user_customer( $user->ID, $is_live );
+        $this->sources = $this->model()->get_customer_payment_methods( $this->current_customer->customer_id );
+
+        $response = array(
+            'result'        => 'success',
+            'num_sources'   => count( $this->sources ),
+            'render'        => $this->render( 'source-select' )
+        );
+
+        return $response;
+    }
+
+    public function api_user_execute_payment( $is_admin ) {
+        $invoice = Dojo_Invoice::instance()->model()->get_invoice( $_POST['invoice_id'] );
+        $user = wp_get_current_user();
+
+        // validate invoice
+        if ( ! $invoice || $user->ID != $invoice->user_id ) {
+            return 'Invalid invoice';
+        }
+
+        // validate source
+        $source = $this->model()->get_source( $_POST['source_id'] );
+        if ( ! $source || $user->ID != $source->user_id ) {
+            return 'Invalid payment method';
+        }
+
+        $amount_due = $invoice->amount_cents - $invoice->amount_paid;
+        if ( $amount_due < 0 ) {
+            return 'Nothing due on this invoice';
+        }
+
+        // create and execute charge
+        Stripe\Stripe::setApiKey( $this->get_secret_key() );
+        try {
+            $charge = Stripe\Charge::create(array(
+                'amount'        => $amount_due,
+                'currency'      => 'usd',
+                'customer'      => $source->customer_id,
+                'source'        => $source->source_id,
+                'description'   => $invoice->description,
+                'metadata'      => array( 'invoice_id' => $invoice->ID ),
+            ));
+        } catch( Exception $ex ) {
+            $this->debug( 'Error executing charge ' . $ex->getMessage() );
+            return $ex->getMessage();
+        }
+
+        // record payment against invoice
+        $invoice_payment_id = Dojo_Invoice::instance()->model()->add_invoice_payment( $invoice->ID, $amount_due, array(
+            'payment_date'  => date( 'Y-m-d H:i:s', $charge->created ),
+            'method'        => 'Online Charge',
+        ) );
+
+        // record payment association to stripe charge
+        $this->model()->create_charge( $charge, $invoice_payment_id, $this->is_live() );
+
+        // send notifications of invoice paid
+        Dojo_Invoice::instance()->notify_invoice_paid( $invoice );
+
+        return 'success';
+    }
+
+    public function api_user_execute_event_payment( $is_admin ) {
+        // set post context
+        $_GLOBAL['post'] = $post = get_post( $_POST['post_id'] );
+        if ( ! $post || 'dojo_event' != $post->post_type ) {
+            return 'Invalid event id';
+        }
+
+        // get dojo event instance
+        $dojo_event = Dojo_Event::instance();
+
+        // get current user
+        $user = wp_get_current_user();
+
+        // validate source
+        $source = $this->model()->get_source( $_POST['source_id'] );
+        if ( ! $source || $user->ID != $source->user_id ) {
+            return 'Invalid payment method';
+        }
+
+        // extract student ids from line items
+        $students = array();
+        foreach ( $_POST['line_items'] as $line_item ) {
+            $students[] = $line_item['id'];
+        }
+
+        // validate pricing by using the event line item ajax endpoint directly
+        $_POST['students'] = $students;
+        $line_items = $dojo_event->api_get_line_items( false );
+
+        // verify line items are consistent
+        foreach ( $_POST['line_items'] as $index => $line_item ) {
+            if ( $line_item['amount_cents'] != $line_items[$index]['amount_cents'] ) {
+                debug( 'Line items do not match' );
+                return 'Invalid request';
+            }
+            $line_items[$index]['meta'] = array(
+                'is_event_registration' => true,
+                'event_id' => $_POST['post_id'],
+                'student_id' => $line_item['id'],
+            );
+        }
+
+        // create a new invoice
+        $invoice_id = Dojo_Invoice::instance()->create_invoice( $user->ID, $post->post_title, $line_items );
+        $invoice = Dojo_Invoice::instance()->model()->get_invoice( $invoice_id );
+
+        $amount_due = $invoice->amount_cents;
+
+        // create and execute charge
+        Stripe\Stripe::setApiKey( $this->get_secret_key() );
+        try {
+            $charge = Stripe\Charge::create(array(
+                'amount'        => $amount_due,
+                'currency'      => 'usd',
+                'customer'      => $source->customer_id,
+                'source'        => $source->source_id,
+                'description'   => $invoice->description,
+                'metadata'      => array( 'invoice_id' => $invoice->ID ),
+            ));
+        } catch( Exception $ex ) {
+            // delete the invoice
+            Dojo_Invoice::instance()->model()->delete_invoice( $invoice_id );
+            $this->debug( 'Error executing charge ' . $ex->getMessage() );
+            return $ex->getMessage();
+        }
+
+        // record payment against invoice
+        $invoice_payment_id = Dojo_Invoice::instance()->model()->add_invoice_payment( $invoice->ID, $amount_due, array(
+            'payment_date'  => date( 'Y-m-d H:i:s', $charge->created ),
+            'method'        => 'Online Charge',
+        ) );
+
+        // record payment association to stripe charge
+        $this->model()->create_charge( $charge, $invoice_payment_id, $this->is_live() );
+
+        // send notifications of invoice paid which will be picked up by Dojo_Event to register the students
+        Dojo_Invoice::instance()->notify_invoice_paid( $invoice );
+
+        return 'success';
     }
 
 
@@ -131,10 +342,26 @@ class Dojo_Payment_Stripe extends Dojo_Extension {
 
     /**** Filters ****/
 
+    public function filter_dojo_event_register_button( $render, $post_id ) {
+        $user = wp_get_current_user();
+        $this->current_post_id = $post_id;
+        $this->current_user = $user;
+        $this->current_customer = $this->model()->get_user_customer( $user->ID, $this->is_live() );
+        $this->sources = $this->model()->get_customer_payment_methods( $this->current_customer->customer_id );
+
+        return $this->render( 'event-payment' );
+    }
+
     public function filter_dojo_invoice_payment( $render, $invoice ) {
+        $user = wp_get_current_user();
         $this->current_invoice = $invoice;
-        $this->sources = array();
-        $this->current_user = wp_get_current_user();
+        $this->current_user = $user;
+        $this->current_customer = $this->model()->get_user_customer( $user->ID, $this->is_live() );
+        if ( $this->current_customer ) {
+            $this->sources = $this->model()->get_customer_payment_methods( $this->current_customer->customer_id );
+        } else {
+            $this->sources = array();
+        }
 
         return $this->render( 'invoice-payment' );
     }

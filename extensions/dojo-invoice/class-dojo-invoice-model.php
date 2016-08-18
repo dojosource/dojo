@@ -3,6 +3,8 @@
  * Invoice extension model
  */
 
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 class Dojo_Invoice_Model extends Dojo_Model_Base {
     private static $instance;
 
@@ -99,6 +101,12 @@ class Dojo_Invoice_Model extends Dojo_Model_Base {
             LEFT JOIN $this->payments p ON i.ID = p.invoice_id
             WHERE i.ID = %d", $invoice_id );
         return $wpdb->get_row( $sql );
+    }
+
+    public function delete_invoice( $invoice_id ) {
+        global $wpdb;
+
+        $wpdb->delete( $this->invoices, array( 'ID' => $invoice_id ) );
     }
 
     /**

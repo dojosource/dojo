@@ -14,19 +14,16 @@ class Dojo_Invoice extends Dojo_Extension {
     protected function __construct() {
         parent::__construct( 'Invoice' );
 
-        $this->register_action_handlers( array (
+        $this->register_action_handlers( array(
             'dojo_membership_render_page',
             'dojo_membership_submit_application',
             'dojo_membership_add_user_dashboard_blocks',
         ) );
 
-        $this->register_filters( array (
-            'dojo_membership_page_title',
-            'dojo_membership_admin_student_application',
-        ), 10, 2 );
-
-        $this->register_filters( array (
+        $this->register_filters( array(
             'dojo_membership_submit_application_redirect',
+            array( 'dojo_membership_page_title', 10, 2 ),
+            array( 'dojo_membership_admin_student_application', 10, 2 ),
         ) );
     }
 
@@ -225,11 +222,61 @@ class Dojo_Invoice extends Dojo_Extension {
             foreach ( $line_items as $line_item ) {
                 do_action( 'dojo_invoice_line_item_paid', $line_item );
             }
+
+            // refresh invoice info
+            $this->invoice = $this->model()->get_invoice( $invoice->ID );
+            $this->line_items = $this->model()->get_invoice_line_items( $invoice->ID, ARRAY_A );
+
+            // notify admin
+            $message = $this->render('email-invoice-paid');
+            $headers[] = 'Content-Type: text/html; charset=UTF-8';
+            $adminEmail = get_option( 'admin_email' );
+            wp_mail( $adminEmail, 'Invoice Paid ' . str_pad( $invoice->ID, 7, '0', STR_PAD_LEFT ), $message, $headers );
         }
     }
 
 
     /**** Utilities ****/
+
+    public function create_invoice( $user_id, $description, $line_items ) {
+        // create a new invoice
+        $invoice_id = $this->model()->create_invoice( $user_id, $description );
+
+        foreach ( $line_items as $line_item ) {
+
+            if ( isset( $line_item['meta'] ) && is_array( $line_item['meta'] ) ) {
+                $meta = serialize( $line_item['meta'] );
+            } else {
+                $meta = serialize( array() );
+            }
+
+            $params = array();
+            if ( isset( $line_item['student_id'] ) ) {
+                $params['student_id'] = $line_item['student_id'];
+            }
+            if ( isset( $line_item['membership_id'] ) ) {
+                $params['membership_id'] = $line_item['membership_id'];
+            }
+            $params['meta'] = $meta;
+
+            // create charge
+            $charge_id = $this->model()->create_charge(
+                $user_id,
+                $line_item['description'],
+                $line_item['amount_cents'],
+                $params
+            );
+
+            // add to invoice
+            $this->model()->add_invoice_charge( $invoice_id, $charge_id );
+        }
+
+        $this->model()->update_invoice_total( $invoice_id );
+
+        // return invoice id
+        return $invoice_id;
+    }
+
 
     protected function load_user_invoice_info( $user_id ) {
         $this->invoices = $this->model()->get_invoices( $user_id );

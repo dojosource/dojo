@@ -27,6 +27,7 @@ class Dojo_Checkout_Table extends Dojo_WP_Base {
         $this->options = array(
             'amount_paid' => 0,
             'render_simple_total' => false,
+            'headings' => array( 'Description', 'Amount' ),
         );
         $this->options = array_merge( $this->options, $options );
 
@@ -54,12 +55,12 @@ class Dojo_Checkout_Table extends Dojo_WP_Base {
         $amount_paid = '$' . (int)( $amount_paid / 100 ) . '.' . str_pad( $amount_paid % 100, 2, '0', STR_PAD_LEFT);
         $total_due = '$' . (int)( $total_due / 100 ) . '.' . str_pad( $total_due % 100, 2, '0', STR_PAD_LEFT);
         ?>
-        <div class="dojo-checkout-items">
+        <div class="dojo-checkout-items"<?php echo 0 == count( $this->line_items ) ? ' style="display:none;"' : '' ?>>
             <table class="dojo-checkout-items">
                 <thead>
                     <tr>
-                        <th class="dojo-item-description" colspan="2">Description</th>
-                        <th class="dojo-item-amount">Amount</th>
+                        <th class="dojo-item-description" colspan="2"><?php echo esc_html( $this->options['headings'][0] ) ?></th>
+                        <th class="dojo-item-amount"><?php echo esc_html( $this->options['headings'][1] ) ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -96,7 +97,7 @@ class Dojo_Checkout_Table extends Dojo_WP_Base {
         <script>
             var $dojoLineItemTemplate;
             
-            function dojoSetLineItems(lineItems) {
+            function dojoCheckoutSetLineItems(lineItems) {
                 var $ = jQuery;
                 var total = 0;
                 $('.dojo-checkout-item').not('.dojo-template').remove();
@@ -123,8 +124,18 @@ class Dojo_Checkout_Table extends Dojo_WP_Base {
                 }
             }
 
+            function dojoCheckoutGetLineItems() {
+                var $ = jQuery;
+                var lineItems = [];
+                $('.dojo-checkout-item').not('.dojo-template').each(function() {
+                    lineItems.push($(this).data('line-item'));
+                });
+                return lineItems;
+            }
+
             jQuery(function($) {
                 $dojoLineItemTemplate = $('.dojo-template.dojo-checkout-item');
+                dojoCheckoutSetLineItems(<?php echo json_encode( $this->line_items ) ?>);
             });
         </script>
         <?php

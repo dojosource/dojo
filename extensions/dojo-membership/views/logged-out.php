@@ -35,11 +35,12 @@ Already have an account? <a href="<?php echo wp_login_url( get_permalink() ); ?>
         <input type="password" id="confirmpassword" name="confirmpassword" size="30" required>
     </div>
     <div class="dojo-field">
-        <div class="dojo-error">
+        <div class="dojo-error" style="display:none;">
         </div>
     </div>
     <div class="dojo-field">
-        <button type="submit">Create Account</button>
+        <div class="dojo-please-wait" style="display:none;">Please wait...</div>
+        <button type="submit" class="dojo-submit-button">Create Account</button>
     </div>
 </form>
 
@@ -59,10 +60,16 @@ jQuery(function($) {
             data[name] = val;
         });
 
+        $('.dojo-error').hide();
+        $('.dojo-submit-button').hide();
+        $('.dojo-please-wait').show();
+
         $.post('<?= $this->ajax( 'signup' ) ?>', data, function(response) {
             if (response != 'success') {
                 $('.dojo-error').html(response);
                 $('.dojo-error').show();
+                $('.dojo-please-wait').hide();
+                $('.dojo-submit-button').show();
             }
             else {
                 window.location.reload();

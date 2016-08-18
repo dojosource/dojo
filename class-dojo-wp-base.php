@@ -21,17 +21,30 @@ class Dojo_WP_Base {
     /**
      * Registers one or more action handlers. Expects handler functions to be methods
      * of the form handle_$action
+     * To include optional priority or accepted_args to just a single action handler
+     * use an array for the action:
+     * array( 'action_name', 10, 1 )
      *
      * @param mixed $actions Name of a single action or array of actions
+     * @param int $priority
+     * @param int $accepted_args
      *
      * @return void
      */
-    protected function register_action_handlers( $actions ) {
+    protected function register_action_handlers( $actions, $priority = 10, $accepted_args = 1 ) {
         if ( ! is_array( $actions ) ) {
-            $actions = array( $actions );
+            $actions = array( array( $actions, $priority, $accepted_args ) );
         }
         foreach ( $actions as $action ) {
-            add_action( $action, array( $this, 'handle_' . $action ) );
+            if ( is_array( $action ) ) {
+                $args = $action;
+                $action = $args[0];
+                $args[0] = array( $this, 'handle_' . str_replace( '-', '_', $action ) );
+                array_unshift( $args, $action );
+                call_user_func_array( 'add_action', $args );
+            } else {
+                add_action( $action, array( $this, 'handle_' . str_replace( '-', '_', $action ) ), $priority, $accepted_args );
+            }
         }
     }
 
@@ -47,10 +60,18 @@ class Dojo_WP_Base {
      */
     protected function register_filters( $tags, $priority = 10, $accepted_args = 1 ) {
         if ( ! is_array( $tags ) ) {
-            $tags = array( $tags );
+            $tags = array( array( $tags, $priority, $accepted_args ) );
         }
         foreach ( $tags as $tag ) {
-            add_filter( $tag, array( $this, 'filter_' . $tag ), $priority, $accepted_args );
+            if ( is_array( $tag ) ) {
+                $args = $tag;
+                $tag = $args[0];
+                $args[0] = array( $this, 'filter_' . str_replace( '-', '_', $tag ) );
+                array_unshift( $args, $tag );
+                call_user_func_array( 'add_filter', $args );
+            } else {
+                add_filter( $tag, array( $this, 'filter_' . str_replace( '-', '_', $tag ) ), $priority, $accepted_args );
+            }
         }
     }
 
@@ -76,7 +97,7 @@ class Dojo_WP_Base {
      *
      * @param string $class
      *
-     * @return $class
+     * @return object
      */
     protected function get_instance( $class ) {
         return call_user_func( array( $class, 'instance' ) );
