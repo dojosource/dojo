@@ -41,6 +41,20 @@ class Dojo_Installer extends Dojo_Installer_Base {
         }
     }
 
+    public function activate() {
+        parent::activate();
+
+        if ( false === wp_next_scheduled( 'dojo_update' ) ) {
+            wp_schedule_event( time(), 'hourly', 'dojo_update' );
+        }
+    }
+
+    public function deactivate() {
+        parent::deactivate();
+
+        wp_clear_scheduled_hook( 'dojo_update' );
+    }
+
     public function rev_1() {
         global $wpdb;
 

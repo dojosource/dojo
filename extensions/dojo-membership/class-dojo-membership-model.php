@@ -7,6 +7,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
     private static $instance;
 
     // table names
+    public $notifications;
     public $students;
     public $memberships;
     public $membership_alerts;
@@ -20,6 +21,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
     protected function __construct() {
         global $wpdb;
 
+        $this->notifications                    = $wpdb->prefix . 'dojo_notifications';
         $this->students                         = $wpdb->prefix . 'dojo_students';
         $this->memberships                      = $wpdb->prefix . 'dojo_memberships';
         $this->membership_alerts                = $wpdb->prefix . 'dojo_membership_alerts';
@@ -36,6 +38,35 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
             self::$instance = new self;
         }
         return self::$instance;
+    }
+
+    /**
+     * Create a new notification
+     *
+     * @param int $user_id
+     * @param string $title
+     * @param string $body
+     * @param array $params
+     *
+     * @return int
+     */
+    public function create_notification( $user_id, $title, $body, $params = array() ) {
+        global $wpdb;
+
+        $insert_params = $this->filter_params( $params, array(
+            'type',
+            'ref_id',
+            'date_sent',
+            'date_viewed',
+            'date_expired',
+        ));
+
+        $insert_params['user_id']   = $user_id;
+        $insert_params['title']     = $title;
+        $insert_params['body']      = $body;
+
+        $wpdb->insert( $this->notifications, $insert_params );
+        return $wpdb->insert_id;
     }
 
     /**

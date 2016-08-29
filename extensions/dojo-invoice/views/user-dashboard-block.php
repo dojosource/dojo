@@ -10,14 +10,6 @@ $dojo_membership = Dojo_Membership::instance();
 
     <h3>Invoices</h3>
     <?php if ( 0 != count( $invoices_not_paid ) ) : ?>
-        <?php if ( 1 == count( $invoices_not_paid ) ) : ?>
-            <div class="dojo-warn">You have an unpaid invoice.</div>
-        <?php else : ?>
-            <div class="dojo-warn">You have some unpaid invoices.</div>
-        <?php endif; ?>
-
-        <div class="dojo-clear-space"></div>
-
         <div class="dojo-select-list dojo-invoices">
         <?php foreach ( $invoices_not_paid as $invoice ) : ?>
             <div class="dojo-select-list-item" data-invoice="<?php echo esc_attr( $invoice->ID ) ?>">

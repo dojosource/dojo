@@ -7,6 +7,7 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
     private static $instance;
 
     // table names
+    private $notifications;
     private $students;
     private $memberships;
     private $membership_alerts;
@@ -22,6 +23,7 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
 
         parent::__construct( __CLASS__ );
 
+        $this->notifications                    = $wpdb->prefix . 'dojo_notifications';
         $this->students                         = $wpdb->prefix . 'dojo_students';
         $this->memberships                      = $wpdb->prefix . 'dojo_memberships';
         $this->membership_alerts                = $wpdb->prefix . 'dojo_membership_alerts';
@@ -45,6 +47,7 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
 
         if ( $rev >= 1 ) {
             $rev1_tables = array(
+                $this->notifications,
                 $this->students,
                 $this->memberships,
                 $this->membership_alerts,
@@ -64,6 +67,26 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
 
     public function rev_1() {
         global $wpdb;
+
+        $wpdb->query( '
+            CREATE TABLE ' . $this->notifications . ' (
+            ID INT NOT NULL AUTO_INCREMENT,
+            user_id INT NULL,
+            timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            type VARCHAR(255) NULL,
+            ref_id INT NULL,
+            title VARCHAR(255) NULL,
+            body TEXT NULL,
+            date_sent DATETIME NULL,
+            date_viewed DATETIME NULL,
+            date_expired DATETIME NULL,
+            PRIMARY KEY (ID),
+            KEY user_id (user_id),
+            KEY type (type),
+            KEY ref_id (ref_id),
+            KEY date_sent (date_sent),
+            KEY date_expired (date_expired));
+        ' );
 
         $wpdb->query( '
             CREATE TABLE ' . $this->students . ' (

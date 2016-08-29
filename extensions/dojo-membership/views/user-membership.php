@@ -56,6 +56,10 @@ $notifications = $this->notifications;
             <h3>Notifications</h3>
             <?php if ( 0 == count( $notifications ) ) : ?>
             <div class="dojo-info">No notifications to report at this time.</div>
+            <?php else : ?>
+                <?php foreach ( $notifications as $notification_html ) : ?>
+                    <div class="dojo-warn"><?php echo $notification_html ?></div>
+                <?php endforeach; ?>
             <?php endif; ?>
             <div class="dojo-clear-space"></div>
             <?php foreach ( $this->user_dashboard_blocks[ Dojo_Membership::USER_DASHBOARD_RIGHT ] as $block_name => $owner ) : ?>

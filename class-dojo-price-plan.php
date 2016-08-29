@@ -7,7 +7,7 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
     private $state;
 
     public function __construct( $plan_json = null ) {
-        if ( null === $plan_json ) {
+        if ( empty( $plan_json ) ) {
             $plan_json = '{}';
         }
         try {

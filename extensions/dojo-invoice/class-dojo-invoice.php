@@ -17,6 +17,7 @@ class Dojo_Invoice extends Dojo_Extension {
         $this->register_action_handlers( array(
             'dojo_membership_render_page',
             'dojo_membership_submit_application',
+            'dojo_membership_add_notifications',
             'dojo_membership_add_user_dashboard_blocks',
         ) );
 
@@ -71,11 +72,22 @@ class Dojo_Invoice extends Dojo_Extension {
         $this->submitted_memberships[ $membership->ID ] = $membership;
     }
 
-    public function handle_dojo_membership_add_user_dashboard_blocks( $dojo_membership ) {
-        // set up state for views rendered from render_user_dashboard_block
+    public function handle_dojo_membership_add_notifications( $dojo_membership ) {
+         // set up state for views rendered from render_user_dashboard_block
         $user_id = wp_get_current_user()->ID;
         $this->load_user_invoice_info( $user_id );
 
+        if ( 1 != count( $this->invoices_not_paid ) ) {
+            if ( 1 == count( $this->invoices_not_paid ) ) {
+                $dojo_membership->add_notification( 'You have an unpaid invoice.' );
+            }
+            else {
+                $dojo_membership->add_notification( 'You have some unpaid invoices.' );
+            }
+        }
+    }
+
+    public function handle_dojo_membership_add_user_dashboard_blocks( $dojo_membership ) {
         // register block
         $dojo_membership->add_user_dashboard_block( 'invoices', Dojo_Membership::USER_DASHBOARD_RIGHT, $this );
     }

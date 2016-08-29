@@ -68,6 +68,7 @@ class Dojo_Membership extends Dojo_Extension {
         parent::__construct( 'Membership' );
 
         $this->register_action_handlers( array (
+            'dojo_update',
             'dojo_register_settings',
             'dojo_register_menus',
             'dojo_add_dashboard_blocks',
@@ -580,6 +581,7 @@ Membership: ' . $student->contract->title . '
 
     /**** Action Handlers ****/
 
+
     public function handle_dojo_register_settings( $settings ) {
         $settings->register_section(
             'dojo_member_signup_section',   // section id
@@ -616,6 +618,12 @@ Membership: ' . $student->contract->title . '
                 $this->apply_membership_payment( $line_item->membership_id, 1 );
             }
         }
+    }
+
+    public function handle_dojo_update() {
+        $this->debug( 'Running membership updates' );
+
+
     }
 
 
@@ -833,7 +841,12 @@ Membership: ' . $student->contract->title . '
                         }
                     }
 
+                    // initialize notifications
                     $this->notifications = array();
+
+                    // action to register notifications to display on the membership home page
+                    // use Dojo_Membership::add_notification() in handler
+                    do_action( 'dojo_membership_add_notifications', $this );
 
                     // initialize user dashboard blocks
                     $this->user_dashboard_blocks = array(
@@ -965,6 +978,18 @@ Membership: ' . $student->contract->title . '
         }
 
         return apply_filters( 'dojo_membership_page_title', $title, $path );
+    }
+
+    /**
+     * Use in handler for action dojo_membershi_add_notifications.
+     * Registers a notification to display on the membership home page.
+     *
+     * @param string $html
+     *
+     * @return void
+     */
+    public function add_notification( $html ) {
+        $this->notifications[] = $html;
     }
 
     /**
