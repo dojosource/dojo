@@ -10,13 +10,11 @@ class Dojo_Model extends Dojo_Model_Base {
     private static $instance;
 
     // table names
-    private $callbacks;
     private $event_log;
 
     protected function __construct() {
         global $wpdb;
 
-        $this->callbacks        = $wpdb->prefix . 'dojo_callbacks';
         $this->event_log        = $wpdb->prefix . 'dojo_event_log';
     }
 

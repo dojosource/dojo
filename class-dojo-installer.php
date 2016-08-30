@@ -10,7 +10,6 @@ class Dojo_Installer extends Dojo_Installer_Base {
     private static $instance;
 
     // table names
-    private $callbacks;
     private $event_log;
 
     protected function __construct() {
@@ -18,7 +17,6 @@ class Dojo_Installer extends Dojo_Installer_Base {
 
         parent::__construct( __CLASS__ );
 
-        $this->callbacks    = $wpdb->prefix . 'dojo_callbacks';
         $this->event_log    = $wpdb->prefix . 'dojo_event_log';
     }
 
@@ -60,19 +58,6 @@ class Dojo_Installer extends Dojo_Installer_Base {
 
     public function rev_1() {
         global $wpdb;
-
-        $wpdb->query( '
-            CREATE TABLE ' . $this->callbacks . ' (
-            ID INT NOT NULL AUTO_INCREMENT,
-            timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-            class VARCHAR(255) NULL,
-            function VARCHAR(255) NULL,
-            args TEXT NULL,
-            callback_executed DATETIME NULL,
-            callback_response TEXT NULL,
-            PRIMARY KEY (ID),
-            KEY callback_executed (callback_executed));
-        ' );
 
         $wpdb->query( '
             CREATE TABLE ' . $this->event_log . ' (
