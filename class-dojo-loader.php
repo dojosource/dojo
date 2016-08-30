@@ -30,7 +30,7 @@ class Dojo_Loader {
         // todo - use settings to only add activated extensions
         $this->add_extension( 'Dojo_Membership' );
         $this->add_extension( 'Dojo_Event' );
-        $this->add_extension( 'Dojo_Payment_Stripe' );
+        $this->add_extension( 'Dojo_Payment' );
         $this->add_extension( 'Dojo_Invoice' );
 
         spl_autoload_register( array( $this, 'autoload' ) );

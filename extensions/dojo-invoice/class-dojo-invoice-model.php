@@ -43,7 +43,7 @@ class Dojo_Invoice_Model extends Dojo_Model_Base {
      */
     public function create_charge( $user_id, $description, $amount_cents, $params = array() ) {
         global $wpdb;
-        
+
         // filter optional parameters
         $insert_params = $this->filter_params( $params, array(
             'charge_date',
@@ -222,7 +222,7 @@ class Dojo_Invoice_Model extends Dojo_Model_Base {
      * @param int $invoice_id
      * @param $output_type output type predefined constant
      *
-     * @return mixed 
+     * @return mixed
      */
     public function get_invoice_line_items( $invoice_id, $output_type = OBJECT ) {
         global $wpdb;

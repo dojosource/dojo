@@ -61,7 +61,14 @@ $notifications = $this->notifications;
                     <div class="dojo-warn"><?php echo $notification_html ?></div>
                 <?php endforeach; ?>
             <?php endif; ?>
+
             <div class="dojo-clear-space"></div>
+
+            <?php if ( $this->has_active_membership ) : ?>
+                <?php echo $this->render( 'user-dashboard-billing' ) ?>
+                <div class="dojo-clear-space"></div>
+            <?php endif; ?>
+
             <?php foreach ( $this->user_dashboard_blocks[ Dojo_Membership::USER_DASHBOARD_RIGHT ] as $block_name => $owner ) : ?>
             <div class="dojo-user-dashboard-block">
                 <?php $owner->render_user_dashboard_block( $block_name ) ?>

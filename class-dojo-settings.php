@@ -15,6 +15,7 @@ class Dojo_Settings {
         $this->options = get_option( 'dojo_options' );
 
         add_action( 'admin_init', array( $this, 'handle_admin_init' ) );
+        add_action( 'update_option_dojo_options', array( $this, 'handle_update_option_dojo_options' ) );
     }
 
     /**
@@ -132,6 +133,14 @@ class Dojo_Settings {
                 );
             }
         }
+    }
+
+    public function handle_update_option_dojo_options() {
+        // refresh options
+        $this->options = get_option( 'dojo_options' );
+
+        // let everyone know we have updated options
+        do_action( 'dojo_settings_updated', $this );
     }
 
     public function render_menu_settings() {

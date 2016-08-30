@@ -1,4 +1,6 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 $invoice = $this->current_invoice;
 $sources = $this->sources;
 $user = $this->current_user;

@@ -65,6 +65,13 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
         }
     }
 
+    public function activate() {
+        global $wp_rewrite;
+
+        // flush rewrite rules to pick up membership url slug
+        $wp_rewrite->flush_rules( false );
+    }
+
     public function rev_1() {
         global $wpdb;
 

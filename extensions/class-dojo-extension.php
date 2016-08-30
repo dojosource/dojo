@@ -48,6 +48,25 @@ class Dojo_Extension extends Dojo_WP_base {
     }
 
     /**
+     * Log an event to the event log. If user_id not set will default to current user.
+     *
+     * @param string $event
+     * @param int $user_id
+     *
+     * @return void
+     */
+    public function log_event( $event, $user_id = null ) {
+        if ( null == $user_id ) {
+            $user = wp_get_current_user();
+            if ( $user ) {
+                $user_id = $user->ID;
+            }
+        }
+
+        Dojo::instance()->log_event( $event, $user_id, get_class( $this ) );
+    }
+
+    /**
      * Gets the path of the derived extension with trailing slash
      * @param string $file Optional relative path file to append
      *

@@ -3,6 +3,8 @@
  * Main installer
  */
 
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 
 class Dojo_Installer extends Dojo_Installer_Base {
     private static $instance;
@@ -33,6 +35,7 @@ class Dojo_Installer extends Dojo_Installer_Base {
         if ( $rev >= 1 ) {
             $rev1_tables = array(
                 $this->callbacks,
+                $this->event_log,
             );
 
             if ( ! $this->table_exists( $rev1_tables ) ) {

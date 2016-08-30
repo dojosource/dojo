@@ -3,6 +3,9 @@
  * Membership extension model
  */
 
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
+
 class Dojo_Membership_Model extends Dojo_Model_Base {
     private static $instance;
 

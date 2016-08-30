@@ -32,7 +32,7 @@ final class Dojo extends Dojo_WP_Base {
         $this->plugin_path = plugin_dir_path( __FILE__ );
         $this->plugin_url = plugin_dir_url( __FILE__ );
 
-        $this->register_action_handlers( array (
+        $this->register_action_handlers( array(
             'plugins_loaded',
             'wp_enqueue_scripts',
             'admin_enqueue_scripts',
@@ -42,12 +42,12 @@ final class Dojo extends Dojo_WP_Base {
             'dojo_register_settings',
         ) );
 
-        $this->register_filters( array (
+        $this->register_filters( array(
             'query_vars',
             'posts_results',
         ) );
 
-        $this->register_shortcodes( array (
+        $this->register_shortcodes( array(
             'dojo_page',
         ) );
 
@@ -77,6 +77,15 @@ final class Dojo extends Dojo_WP_Base {
     /**** Utility ****/
 
     /**
+     * Get model instance for plugin
+     *
+     * @return object
+     */
+    public function model() {
+        return Dojo_Model::instance();
+    }
+
+    /**
      * Get fully qualified path of the given plugin file
      *
      * @param string $file Relative path of file
@@ -96,6 +105,19 @@ final class Dojo extends Dojo_WP_Base {
      */
     public function url_of( $file ) {
         return $this->plugin_url . $file;
+    }
+
+    /**
+     * Log an event with optional user and/or extension context
+     *
+     * @param string $event
+     * @param int $user_id
+     * @param string $extension
+     *
+     * @return void
+     */
+    public function log_event( $event, $user_id = null, $extension = null ) {
+        $this->model()->create_event_log( $event, $user_id, $extension );
     }
 
     /**
@@ -120,11 +142,15 @@ final class Dojo extends Dojo_WP_Base {
     public static function handle_activate() {
         Dojo_Installer::instance()->activate();
         Dojo_Extension_Manager::instance()->handle_activate();
+
+        Dojo_Model::instance()->create_event_log( 'Plugin activated' );
     }
 
     public static function handle_deactivate() {
         Dojo_Installer::instance()->deactivate();
         Dojo_Extension_Manager::instance()->handle_deactivate();
+
+        Dojo_Model::instance()->create_event_log( 'Plugin deactivated' );
     }
 
     public function handle_plugins_loaded() {

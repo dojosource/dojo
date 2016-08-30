@@ -70,6 +70,7 @@ class Dojo_Membership extends Dojo_Extension {
         $this->register_action_handlers( array (
             'dojo_update',
             'dojo_register_settings',
+            'dojo_settings_updated',
             'dojo_register_menus',
             'dojo_add_dashboard_blocks',
             'dojo_invoice_line_item_paid',
@@ -81,14 +82,7 @@ class Dojo_Membership extends Dojo_Extension {
             'dojo_guest',
         ) );
 
-        $settings = Dojo_Settings::instance();
-        $slug = $settings->get( 'membership_slug' );
-        if ( '' == $slug ) {
-            $slug = 'membership';
-        }
-        $this->register_custom_pages( array (
-            'membership' => $slug,
-        ) );
+        $this->register_membership_page();
     }
 
     public static function instance() {
@@ -578,6 +572,16 @@ Membership: ' . $student->contract->title . '
         return 'success';
     }
 
+    public function api_save_billing_options( $is_admin ) {
+        $user = wp_get_current_user();
+
+        $this->set_user_billing_day( $user->ID, (int) $_POST['billing_day'] );
+
+        do_action( 'dojo_membership_save_user_billing_options', $user );
+
+        return 'success';
+    }
+
 
     /**** Action Handlers ****/
 
@@ -592,6 +596,16 @@ Membership: ' . $student->contract->title . '
         $settings->register_option( 'dojo_member_signup_section', 'membership_enable_username', 'Enable Username', $this );
         $settings->register_option( 'dojo_member_signup_section', 'membership_slug', 'Membership Url Slug', $this );
         $settings->register_option( 'dojo_member_signup_section', 'membership_signup_header', 'Sign Up Header', $this );
+    }
+
+    public function handle_dojo_settings_updated( $settings ) {
+        global $wp_rewrite;
+
+        // re-register membership page with possibly updated slug
+        $this->register_membership_page();
+
+        // refresh rewrite rules
+        $wp_rewrite->flush_rules( false );
     }
     
     public function handle_dojo_register_menus( $menus ) {
@@ -623,6 +637,10 @@ Membership: ' . $student->contract->title . '
     public function handle_dojo_update() {
         $this->debug( 'Running membership updates' );
 
+        // todo
+        // check for payment due
+
+        // check for cancellation complete
 
     }
 
@@ -831,13 +849,18 @@ Membership: ' . $student->contract->title . '
                     $this->students = $this->model()->get_user_students( $user_id );
                     $this->is_new = true;
                     $this->ready_to_enroll = false;
+                    $this->has_active_membership = false;
+                    $this->billing_day = $this->get_user_billing_day( $user_id );
                     foreach ( $this->students as $student ) {
                         $membership = $this->model()->get_student_membership( $student->ID );
                         $student->membership = $membership;
-                        if ( self::MEMBERSHIP_NA != $membership->status && self::MEMBERSHIP_PENDING != $membership->status ) {
+                        if ( $this->is_status_submitted( $membership->status ) ) {
                             $this->is_new = false;
                         } else {
                             $this->ready_to_enroll = true;
+                        }
+                        if ( $this->is_status_active( $membership->status ) ) {
+                            $this->has_active_membership = true;
                         }
                     }
 
@@ -939,6 +962,12 @@ Membership: ' . $student->contract->title . '
             case '/enroll/student/cancel' :
                 echo $this->render( 'user-enroll-cancel' );
                 return true;
+
+            case '/billing' :
+                $user_id = wp_get_current_user()->ID;
+                $this->billing_day = $this->get_user_billing_day( $user_id );
+                echo $this->render( 'user-billing' );
+                return true;
         }
 
         // page not found
@@ -972,6 +1001,10 @@ Membership: ' . $student->contract->title . '
                 } else {
                     $title = 'Membership Details';
                 }
+
+            case '/billing' :
+                $title = 'Manage Billing';
+                break;
 
             default:
                 $title = 'Membership';
@@ -1075,6 +1108,17 @@ Membership: ' . $student->contract->title . '
 
 
     /**** Utility ****/
+
+    public function register_membership_page() {
+        $settings = Dojo_Settings::instance();
+        $slug = $settings->get( 'membership_slug' );
+        if ( '' == $slug ) {
+            $slug = 'membership';
+        }
+        $this->register_custom_pages( array (
+            'membership' => $slug,
+        ) );
+    }
 
     /**
      * Gets membership url with correct slug
@@ -1289,6 +1333,33 @@ Membership: ' . $student->contract->title . '
             $name .= ' (' . $record['alias'] . ')';
         }
         return $name;
+    }
+
+    /**
+     * Gets day of month user is billed on recurring payments
+     *
+     * @param int $user_id
+     *
+     * @return int
+     */
+    public function get_user_billing_day( $user_id ) {
+        $billing_day = get_user_meta( $user_id, 'billing_day', true );
+        if ( empty( $billing_day ) ) {
+            return 1;
+        }
+        return (int) $billing_day;
+    }
+
+    /**
+     * Sets day of month user is billed on recurring payments
+     *
+     * @param int $user_id
+     * @param int $billing_day
+     *
+     * @return void
+     */
+    public function set_user_billing_day( $user_id, $billing_day ) {
+        update_user_meta( $user_id, 'billing_day', $billing_day );
     }
 
     /**

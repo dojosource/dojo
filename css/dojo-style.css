@@ -28,7 +28,7 @@
         margin-left: 200px;
     }
 
-    .dojo-field input, .dojo-field .dojo-value {
+    .dojo-field input[type="text"], .dojo-field input[type="password"], .dojo-field .dojo-value {
         float: left;
     }
 }
@@ -69,6 +69,10 @@ a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:vi
 .dojo-danger {
     padding: 15px;
     background-color: #f2dede;
+}
+
+select.dojo-small-select {
+    width: 100px;
 }
 
 .dojo-select-list {

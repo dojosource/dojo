@@ -1,24 +1,32 @@
 <?php
 /**
- * Dojo stripe payment extension
+ * Dojo payment extension
  */
 
 if ( ! defined( 'ABSPATH' ) ) { die(); }
 
-class Dojo_Payment_Stripe extends Dojo_Extension {
+class Dojo_Payment extends Dojo_Extension {
     private static $instance;
 
+    /**** Supported Gateways ****/
+
+    const GATEWAY_STRIPE = 'stripe';
+
+
     protected function __construct() {
-        parent::__construct( 'Stripe Payments' );
+        parent::__construct( 'Online Payments' );
 
         // include vendor library
         require_once $this->path() . 'stripe-php/init.php';
 
         $this->register_action_handlers( array (
             'dojo_register_settings',
+            'dojo_membership_save_user_billing_options',
         ) );
 
         $this->register_filters( array (
+            'dojo_membership_user_billing',
+            'dojo_membership_user_dashboard_billing',
             array( 'dojo_event_register_button', 10, 2 ),
             array( 'dojo_invoice_payment', 10, 2 ),
         ) );
@@ -80,7 +88,7 @@ class Dojo_Payment_Stripe extends Dojo_Extension {
         }
 
         // save event to database log
-        $this->model()->log_event( $input, $event_processed );
+        $this->model()->log_event( self::GATEWAY_STRIPE, $input, $event_processed );
 
         // send response back to stripe
         if ( $event_processed ) {
@@ -332,15 +340,50 @@ class Dojo_Payment_Stripe extends Dojo_Extension {
             $webhook_instructions           // section subtitle
         );
 
-        $settings->register_option( 'dojo_stripe_section', 'stripe_enable_live_mode', 'Enable Live Mode', $this );
+        $settings->register_option( 'dojo_stripe_section', 'payment_enable_live_mode', 'Enable Live Mode', $this );
         $settings->register_option( 'dojo_stripe_section', 'stripe_test_secret_key', 'Test Secret Key', $this );
         $settings->register_option( 'dojo_stripe_section', 'stripe_test_public_key', 'Test Publishable Key', $this );
         $settings->register_option( 'dojo_stripe_section', 'stripe_live_secret_key', 'Live Secret Key', $this );
         $settings->register_option( 'dojo_stripe_section', 'stripe_live_public_key', 'Live Publishable Key', $this );
     }
 
+    public function handle_dojo_membership_save_user_billing_options( $user ) {
+        if ( isset( $_POST['source'] ) ) {
+
+            $is_live = $this->is_live();
+            Stripe\Stripe::setApiKey( $this->get_secret_key() );
+
+            $customer = $this->model()->get_user_customer( $user->ID, $is_live );
+            if ( $customer ) {
+                $stripe_customer = \Stripe\Customer::retrieve( $customer->customer_id );
+                $stripe_customer->default_source = $_POST['source'];
+                $stripe_customer->save();
+
+                // save customer info in our database
+                $this->model()->update_customer( $stripe_customer );
+            }
+        }
+    }
+
 
     /**** Filters ****/
+
+    public function filter_dojo_membership_user_billing( $render ) {
+        $user = wp_get_current_user();
+        $this->current_user = $user;
+        $this->current_customer = $this->model()->get_user_customer( $user->ID, $this->is_live() );
+        $this->sources = $this->model()->get_customer_payment_methods( $this->current_customer->customer_id );
+
+        return $render . $this->render( 'manage-payment-methods' );
+    }
+
+    public function filter_dojo_membership_user_dashboard_billing( $render ) {
+        $user = wp_get_current_user();
+        $customer = $this->model()->get_user_customer( $user->ID, $this->is_live() );
+        $this->default_source = $this->model()->get_source( $customer->default_source );
+
+        return $render . $this->render( 'default-payment-method' );
+    }
 
     public function filter_dojo_event_register_button( $render, $post_id ) {
         $user = wp_get_current_user();
@@ -369,8 +412,8 @@ class Dojo_Payment_Stripe extends Dojo_Extension {
 
     /**** Render Options ****/
 
-    public function render_option_stripe_enable_live_mode() {
-        $this->render_option_checkbox( 'stripe_enable_live_mode', 'Ready to go live with real payments.' );
+    public function render_option_payment_enable_live_mode() {
+        $this->render_option_checkbox( 'payment_enable_live_mode', 'Ready to go live with real payments.' );
     }
 
     public function render_option_stripe_test_secret_key() {
@@ -393,7 +436,7 @@ class Dojo_Payment_Stripe extends Dojo_Extension {
     /**** Utility ****/
 
     public function is_live() {
-        return '1' == $this->get_setting( 'stripe_enable_live_mode' );
+        return '1' == $this->get_setting( 'payment_enable_live_mode' );
     }
 
     public function get_secret_key() {

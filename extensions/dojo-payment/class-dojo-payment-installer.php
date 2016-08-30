@@ -1,9 +1,9 @@
 <?php
 /**
- * Stripe payment extension installer
+ * Payment extension installer
  */
 
-class Dojo_Payment_Stripe_Installer extends Dojo_Installer_Base {
+class Dojo_Payment_Installer extends Dojo_Installer_Base {
     private static $instance;
 
     // table names
@@ -17,10 +17,10 @@ class Dojo_Payment_Stripe_Installer extends Dojo_Installer_Base {
 
         parent::__construct( __CLASS__ );
 
-        $this->customers    = $wpdb->prefix . 'dojo_stripe_customers';
-        $this->sources      = $wpdb->prefix . 'dojo_stripe_sources';
-        $this->charges      = $wpdb->prefix . 'dojo_stripe_charges';
-        $this->events       = $wpdb->prefix . 'dojo_stripe_events';
+        $this->customers    = $wpdb->prefix . 'dojo_payment_customers';
+        $this->sources      = $wpdb->prefix . 'dojo_payment_sources';
+        $this->charges      = $wpdb->prefix . 'dojo_payment_charges';
+        $this->events       = $wpdb->prefix . 'dojo_payment_events';
     }
 
     public static function instance() {
@@ -96,6 +96,7 @@ class Dojo_Payment_Stripe_Installer extends Dojo_Installer_Base {
             CREATE TABLE ' . $this->events . ' (
             ID INT NOT NULL AUTO_INCREMENT,
             timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            gateway VARCHAR(255) NULL,
             event TEXT NULL,
             processed TINYINT NULL,
             PRIMARY KEY (ID),
