@@ -6,6 +6,56 @@
 if ( ! defined( 'ABSPATH' ) ) { die(); }
 
 class Dojo_WP_Base {
+    private static $override_timestamp = NULL;
+
+    /**
+     * Used for testing purposes to override current time. The plugin uses the base
+     * class date and time functions rather than the php versions directly.
+     *
+     * @param $unix_timestamp
+     *
+     * @return void
+     */
+    public static function set_timestamp_override( $unix_timestamp ) {
+        self::$override_timestamp = $unix_timestamp;
+    }
+
+    /**
+     * Wrapper function to php date(). Used by plugin to allow for unit testing.
+     *
+     * @param $format
+     * @param $timestamp
+     *
+     * @return string
+     */
+    public function date( $format, $timestamp = NULL ) {
+        if ( null === $timestamp ) {
+            $timestamp = self::time();
+        }
+        return date( $format, $timestamp );
+    }
+
+    /**
+     * Wrapper function to php time(). Used by plugin to allow for unit testing.
+     * Supports optional type parameter for mysql format. Use to replace wordpress current_time().
+     *
+     * @param string $type Type of timestamp to return. Defaults to unix timestamp
+     *
+     * @return mixed
+     */
+    public function time( $type = 'unix' ) {
+        if ( null === self::$override_timestamp ) {
+            $timestamp = time();
+        } else {
+            $timestamp = self::$override_timestamp;
+        }
+
+        if ( 'mysql' === $type ) {
+            return date( 'Y-m-d H:i:s', $timestamp );
+        }
+        return $timestamp;
+    }
+
     /**
      * Output a debug message labeled with class::function(line numer)
      *

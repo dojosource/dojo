@@ -166,11 +166,15 @@ class Dojo_Extension extends Dojo_WP_base {
      * Renders a settings option for a regular text field
      *
      * @param string $id option id
+     * @param string $label
      *
      * @return void
      */
-    protected function render_option_regular_text( $id ) {
+    protected function render_option_regular_text( $id, $label = '' ) {
         ?>
+        <?php if ( '' != $label ) : ?>
+            <?php echo $label ?><br />
+        <?php endif; ?>
         <input type="text" id="<?php echo esc_attr( $id ) ?>" name="dojo_options[<?php echo esc_attr( $id ) ?>]" class="regular-text" value="<?php echo $this->get_setting( $id ) ?>" />
         <?php
     }

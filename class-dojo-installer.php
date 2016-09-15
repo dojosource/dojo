@@ -32,7 +32,6 @@ class Dojo_Installer extends Dojo_Installer_Base {
 
         if ( $rev >= 1 ) {
             $rev1_tables = array(
-                $this->callbacks,
                 $this->event_log,
             );
 
@@ -45,6 +44,10 @@ class Dojo_Installer extends Dojo_Installer_Base {
     public function activate() {
         parent::activate();
 
+        // make sure we have a dummy page to use as a placeholder
+        Dojo::instance()->get_dummy_page();
+
+        // make sure scheduler has us for hourly updates
         if ( false === wp_next_scheduled( 'dojo_update' ) ) {
             wp_schedule_event( time(), 'hourly', 'dojo_update' );
         }

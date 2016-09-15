@@ -11,7 +11,7 @@ $checkout_table = new Dojo_Checkout_Table( $line_items, array( 'amount_paid' => 
 <?php else : ?>
 <div class="dojo-right" style="text-align:right;">
     <div><strong>Invoice:</strong> <?php echo esc_html( str_pad( $invoice->ID, 7, '0', STR_PAD_LEFT ) ) ?></div>
-    <div><?php echo esc_html( date( 'm/d/Y', strtotime( $this->invoice->invoice_date ) ) ) ?></div>
+    <div><?php echo esc_html( $this->date( 'm/d/Y', strtotime( $this->invoice->invoice_date ) ) ) ?></div>
 </div>
 
 <h2><?php echo esc_html( $invoice->description ) ?></h2>

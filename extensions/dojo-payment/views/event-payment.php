@@ -44,6 +44,8 @@ jQuery(function($) {
 
     $('.dojo-execute-payment').click(function() {
         $('.dojo-error-container').hide();
+        $('.dojo-some-sources').hide();
+        $('.dojo-please-wait').show();
         var data = {
             post_id: '<?php echo esc_attr( $post_id ) ?>',
             source_id: $('input[name=source]:checked').val(),
@@ -56,6 +58,8 @@ jQuery(function($) {
             else {
                 $('.dojo-error').text(response);
                 $('.dojo-error-container').show();
+                $('.dojo-please-wait').hide();
+                $('.dojo-some-sources').show();
             }
         });
     });

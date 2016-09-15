@@ -10,6 +10,7 @@ final class Dojo extends Dojo_WP_Base {
 
     private $custom_pages = array();
     private $custom_page_content;
+    private $head_complete = false;
 
     /**
      * Root path of plugin ending with slash
@@ -43,8 +44,10 @@ final class Dojo extends Dojo_WP_Base {
         ) );
 
         $this->register_filters( array(
+            'body_class',
             'query_vars',
             'posts_results',
+            array( 'wp_head', 0xFFFF ),
         ) );
 
         $this->register_shortcodes( array(
@@ -134,6 +137,38 @@ final class Dojo extends Dojo_WP_Base {
             'render_callback'   => $render_callback,
             'title_callback'    => $title_callback,
         );
+    }
+
+    /**
+     * Get the dummy page used as a placeholder for dynamic pages. This is used instead
+     * of an ID 0 page so theme options can be applied. If the dummy page has not been created
+     * or has been deleted, a new page is created.
+     *
+     * @return object
+     */
+    public function get_dummy_page() {
+        $page_id = (int) get_option( 'dojo_dummy_page' );
+        if ( 0 != $page_id ) {
+            $page = get_post( $page_id );
+            if ( $page instanceof WP_Post ) {
+                return $page;
+            }
+        }
+
+        // need to create dummy page
+        ob_start();
+        include $this->path_of( 'views/dummy-page-content.php' );
+        $dummy_page_content = ob_get_clean();
+
+        $page_id = wp_insert_post( array(
+            'post_content'          => $dummy_page_content,
+            'post_title'            => 'zzz Dojo Dummy Page zzz',
+            'post_type'             => 'page',
+        ) );
+
+        update_option( 'dojo_dummy_page', $page_id );
+
+        return get_post( $page_id );
     }
 
 
@@ -228,6 +263,11 @@ final class Dojo extends Dojo_WP_Base {
 
     /**** Filters ****/
 
+    public function filter_body_class( $classes ) {
+        $classes[] = 'dojo';
+        return $classes;
+    }
+
     public function filter_query_vars( $qvars ) {
         // add query var for each custom page slug
         foreach ( $this->custom_pages as $slug => $callbacks ) {
@@ -239,8 +279,15 @@ final class Dojo extends Dojo_WP_Base {
     public function filter_posts_results( $posts ) {
         global $wp_query;
 
-        // todo - use dedicated placeholder page instead of ID 0 page to allow for page template selection
-        // and other possible meta detail
+        // TODO - NOT confident about this fix, need to be sure about how to filter out queries to side bar
+        // recent posts etc...
+        if ( $this->head_complete ) {
+            return $posts;
+        }
+
+        // collect custom page titles and links to supply to title filter later
+        $this->page_titles = array();
+        $this->page_links = array();
         
         foreach ( $this->custom_pages as $slug => $callbacks ) {
             if ( isset( $wp_query->query[ 'dojo-' . $slug ] ) ) {
@@ -265,18 +312,18 @@ final class Dojo extends Dojo_WP_Base {
                 // get title using callback
                 $title = call_user_func( $callbacks['title_callback'], $path );
 
-                // create custom post object to represent the page
-                $page = get_post( (object) array(
-                    'ID'                    => 0,
-                    'post_content'          => '[dojo_page]',
-                    'post_title'            => $title,
-                    'post_status'           => 'publish',
-                    'comment_status'        => 'closed',
-                    'ping_status'           => 'closed',
-                    'post_name'             => 'dojo-' . $slug,
-                    'guid'                  => get_site_url() . '/' . $slug . $path,
-                    'post_type'             => 'page',
-                ) );
+                // get dummy page to work with
+                $page = $this->get_dummy_page();
+
+                // override content of dummy page
+                $page->post_content     = '[dojo_page]';
+                $page->post_title       = $title;
+                $page->post_status      = 'publish';
+                $page->comment_status   = 'closed';
+                $page->ping_status      = 'closed';
+                $page->post_name        = 'dojo-' . $slug;
+                $page->guid             = get_site_url() . '/' . $slug . $path;
+                $page->post_type        = 'page';
 
                 // configure wp_query
                 $wp_query->is_home = false;
@@ -284,12 +331,70 @@ final class Dojo extends Dojo_WP_Base {
                 $wp_query->queried_object = $page;
                 $wp_query->max_num_pages = 1;
 
+                // add to cache
+                wp_cache_add( $page->ID, $page, 'posts' );
+                $this->page_titles[ $page->ID ] = $title;
+                $this->page_links[ $page->ID ] = get_site_url() . '/' . $slug . $path;
+
+                // generate ancestors list with titles
+                $parts = explode( '/', $path );
+                $ancestors = array();
+                $ancestor_index = 1;
+                if ( count( $parts ) > 1 ) {
+                    $ancestor_path = '';
+                    foreach ( $parts as $part ) {
+                        if ( '' != $part ) {
+                            $ancestor_path .= '/' . $part;
+                        }
+                        if ( count( $ancestors ) >= count( $parts ) - 1 ) {
+                            break;
+                        }
+                        $ancestor_title = call_user_func( $callbacks['title_callback'], $ancestor_path );
+                        $ancestor_index ++;
+                        $ancestor_id = '' . ( $page->ID + ( $ancestor_index / 10 ) );
+                        $ancestor = get_post( (object) array(
+                            'post_title'    => $ancestor_title,
+                        ) );
+                        $ancestor->ID = $ancestor_id;
+                        $ancestors[] = $ancestor;
+                        $this->page_titles[ $ancestor_id ] = $ancestor_title;
+                        $this->page_links[ $ancestor_id ] = get_site_url() . '/' . $slug . $ancestor_path;
+                    }
+                }
+                $parent = end( $ancestors );
+                if ( $parent ) {
+                    $page->post_parent = $parent->ID;
+                }
+                $page->ancestors = array_reverse( $ancestors );
+
+                // hook filters to make sure calls to get_permalink and get_the_title return the right thing
+                add_filter( 'the_title', array( $this, 'filter_the_title' ), 10, 2 );
+                add_filter( 'post_link', array( $this, 'filter_post_link' ), 10, 2 );
+
                 return array( $page );
             }
         }
 
         // not us, don't do anything
         return $posts;
+    }
+
+    public function filter_the_title( $title, $id ) {
+        if ( isset( $this->page_titles[ $id ] ) ) {
+            return $this->page_titles[ $id ];
+        }
+        return $title;
+    }
+
+    public function filter_post_link( $link, $post ) {
+        if ( isset( $this->page_links[ $post->ID ] ) ) {
+            return $this->page_links[ $post->ID ];
+        }
+        return $link;
+    }
+
+    public function filter_wp_head() {
+        $this->head_complete = true;
     }
 
 

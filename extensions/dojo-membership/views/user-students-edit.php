@@ -53,7 +53,7 @@ if ( isset( $this->current_student ) ) {
         </div>
         <div class="dojo-membership-field">
             <label for="dob">Birth Date (mm/dd/yyyy)</label>
-            <input class="dojo-membership-date" type="text" id="dob" name="dob" placeholder="DOB"<?php echo $new ? '' : ' value="' . date('m/d/Y', strtotime( $student->dob ) ) . '"' ?> required>
+            <input class="dojo-membership-date" type="text" id="dob" name="dob" placeholder="DOB"<?php echo $new ? '' : ' value="' . $this->date('m/d/Y', strtotime( $student->dob ) ) . '"' ?> required>
         </div>
     </div>
     

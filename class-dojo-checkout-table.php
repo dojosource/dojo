@@ -75,18 +75,18 @@ class Dojo_Checkout_Table extends Dojo_WP_Base {
                     </tr>
                     <?php endforeach; ?>
                     <tr class="dojo-totals">
-                        <td style="width:40%"></td>
+                        <td class="dojo-empty-bl" style="width:40%"></td>
                         <td><strong>Total</strong></td>
                         <td><strong class="dojo-item-amount"><?php echo esc_html( $total ) ?></strong></td>
                     </tr>
                     <?php if ( ! $this->options['render_simple_total'] ) : ?>
                     <tr class="dojo-checkout-amount-paid">
-                        <td></td>
+                        <td class="dojo-empty-bl"></td>
                         <td>Amount Paid</td>
                         <td><?php echo esc_html( $amount_paid ) ?></td>
                     </tr>
                     <tr class="dojo-total-due">
-                        <td></td>
+                        <td class="dojo-empty-bl"></td>
                         <td><strong>Total Due</strong></td>
                         <td><strong><?php echo esc_html( $total_due ) ?></strong></td>
                     </tr>

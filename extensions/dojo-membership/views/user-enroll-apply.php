@@ -27,6 +27,10 @@ $contracts = $this->contracts;
             <strong>Pricing:</strong>
             <br />
             <?php echo esc_html( $contract->pricing->describe( 'membership', 'per month' ) ) ?>
+            <?php if ( $contract->pricing->family_pricing_enabled() ) : ?>
+            <br />
+            Pricing will be determined month-to-month based on active family members in each month.
+            <?php endif; ?>
 
             <?php if ( ! empty( $contract->terms_url ) ) : ?>
             <div class="dojo-clear-space"></div>
@@ -51,7 +55,7 @@ $contracts = $this->contracts;
                             <strong><?php echo esc_html( $document->title ) ?></strong>
                         </td>
                         <td>
-                            <a href="<?php echo esc_attr( Dojo::instance()->url_of( 'docs/contract-' . $contract->ID . '/' . $document->filename ) ) ?>" download>download</a>
+                            <a href="<?php echo esc_attr( Dojo::instance()->url_of( 'docs/' . $document->ID . '/' . $document->filename ) ) ?>" download>download</a>
                         </td>
                     </tr>
                     <?php endforeach; ?>

@@ -56,6 +56,21 @@ a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:vi
     background-color: #eee;
 }
 
+.dojo .dojo-block h3, .dojo .dojo-select-list-item h3, .dojo .dojo-container h3 {
+    margin-top: 0px;
+    margin-bottom: 0.8em;
+    clear: none;
+}
+
+.dojo .dojo-block h4, .dojo .dojo-select-list-item h4, .dojo .dojo-container h4 {
+    margin-top: 0.8em;
+    margin-bottom: 0.8em;
+}
+
+.dojo .dojo-container label {
+    display: block;
+}
+
 .dojo-info {
     padding: 15px;
     background-color: #d9edf7;

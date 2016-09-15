@@ -11,7 +11,7 @@ $billing_day = $this->billing_day;
             <select class="dojo-small-select" name="billing_day">
                 <?php for ( $day = 1; $day <= 28; $day ++ ) : ?>
                 <option value="<?php echo $day ?>" <?php selected( $day, $billing_day ) ?>>
-                    <?php echo $day . date( 'S', strtotime( '1/' . $day . '/2000' ) ) ?>
+                    <?php echo $day . $this->date( 'S', strtotime( '1/' . $day . '/2000' ) ) ?>
                 </option>
                 <?php endfor; ?>
             </select>

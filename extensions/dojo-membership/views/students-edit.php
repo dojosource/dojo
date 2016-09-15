@@ -19,7 +19,7 @@ wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryu
     <div class="dojo-block">
         <h2>Membership Application</h2>
         <p>Applying for membership: <strong><?php echo esc_html( $student->contract->title ) ?></strong></p>
-        <?php echo apply_filters( 'dojo_membership_admin_student_application', 'TODO - member application without invoice', $student ) ?>
+        <?php echo apply_filters( 'dojo_membership_admin_student_application', $this->render( 'admin-student-application' ), $student ) ?>
     </div>
     <?php endif; ?>
 
@@ -50,7 +50,7 @@ wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryu
                 <tr valign="top">
                     <th scope="row">Birth Date</th>
                     <td>
-                        <input type="text" id="dob" name="dob" value="<?php echo esc_attr( date( 'm/d/Y', strtotime( $student->dob ) ) ) ?>">
+                        <input type="text" id="dob" name="dob" value="<?php echo esc_attr( $this->date( 'm/d/Y', strtotime( $student->dob ) ) ) ?>">
                     </td>
                 </tr>
             </tbody>

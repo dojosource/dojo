@@ -22,6 +22,8 @@ class Dojo_Event extends Dojo_Extension {
             'init',
             'add_meta_boxes',
             'admin_enqueue_scripts',
+            'dojo_register_settings',
+            'dojo_settings_updated',
             'dojo_invoice_line_item_paid',
             array( 'wp_enqueue_scripts', 20 ),
             array( 'save_post', 1, 2 ),
@@ -45,6 +47,12 @@ class Dojo_Event extends Dojo_Extension {
     /**** Action Handlers ****/
 
     public function handle_init() {
+        $settings = Dojo_Settings::instance();
+        $slug = $settings->get( 'events_slug' );
+        if ( '' == $slug ) {
+            $slug = 'events';
+        }
+
         $labels = array(
             'name'               => 'Events',
             'singular_name'      => 'Event',
@@ -64,7 +72,7 @@ class Dojo_Event extends Dojo_Extension {
         $args = array(
             'labels' => $labels,
             'public' => true,
-            'rewrite' => array( 'slug' => 'dojo-event', 'with_front' => false ),
+            'rewrite' => array( 'slug' => $slug, 'with_front' => false ),
             'supports' => array(
                 'title',
                 'editor',
@@ -223,6 +231,26 @@ class Dojo_Event extends Dojo_Extension {
         remove_action( 'the_post', array( $this, 'handle_the_post' ) );
     }
 
+    public function handle_dojo_register_settings( $settings ) {
+        $settings->register_section(
+            'dojo_event_section',   // section id
+            'Events',               // section title
+            ''                      // section subtitle
+        );
+
+        $settings->register_option( 'dojo_event_section', 'events_slug', 'Events Slug', $this );
+    }
+
+    public function handle_dojo_settings_updated( $settings ) {
+        global $wp_rewrite;
+
+        // re-initialize with new settings
+        $this->handle_init();
+
+        // refresh rewrite rules
+        $wp_rewrite->flush_rules( false );
+    }
+
     public function handle_dojo_invoice_line_item_paid( $line_item ) {
          $meta = unserialize( $line_item->meta );
 
@@ -316,6 +344,17 @@ class Dojo_Event extends Dojo_Extension {
             'reg_limit'     => 'Limit',
             'date'          => 'Date',
         );
+    }
+
+    /**** Render Options ****/
+
+    public function render_option_events_slug() {
+        $slug = Dojo_Settings::instance()->get( 'events_slug' );
+        if ( '' == $slug ) {
+            $slug = 'events';
+        }
+        $base_url = site_url( $slug . '/' );
+        $this->render_option_regular_text( 'events_slug', 'All event pages are under ' . esc_html( $base_url ) );
     }
 
 

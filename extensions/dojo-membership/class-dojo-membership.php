@@ -46,7 +46,7 @@ class Dojo_Membership extends Dojo_Extension {
     const MEMBERSHIP_CANCELED = 'canceled';
 
     // payment is due on canceled membership
-    const MEMBERHSIP_CANCELED_DUE = 'canceled-due';
+    const MEMBERSHIP_CANCELED_DUE = 'canceled-due';
 
     // membership has ended
     const MEMBERSHIP_ENDED = 'ended';
@@ -115,14 +115,14 @@ class Dojo_Membership extends Dojo_Extension {
             echo 'Confirmation password doesn\'t match';
         } else {
             // create new user
-            $userid = wp_insert_user(array(
+            $user_id = wp_insert_user(array(
                 'user_login' => $_POST['username'],
                 'user_pass'  => $_POST['password'],
                 'user_email' => $_POST['email'],
                 'first_name' => $_POST['firstname'],
                 'last_name'  => $_POST['lastname']
             ) );
-            update_user_meta( $userid, 'phone', $_POST['phone'] );
+            update_user_meta( $user_id, 'phone', $_POST['phone'] );
 
             // login as user
             wp_signon( array(
@@ -131,10 +131,13 @@ class Dojo_Membership extends Dojo_Extension {
                 'remember'      => false
             ) );
 
+            // create account record
+            $this->model()->get_user_account( $user_id );
+
             // notify admin of new user
             try {
                 $adminEmail = get_option( 'admin_email' );
-                wp_mail( $adminEmail, 'New Member Login '.time(), '
+                wp_mail( $adminEmail, 'New Member Login '.$this->time(), '
 New Member Login Created
 Name: '.$_POST['firstname'].' '.$_POST['lastname'].'
 Username: '.$_POST['username'].'
@@ -169,7 +172,7 @@ Phone: '.$_POST['phone']
     public function api_get_charge_date() {
         $day = (int) $_POST['charge-day'];
         $chargeDate = $this->get_charge_date( $day );
-        echo 'After today\'s payment, automatic payments will begin <strong>' . date( 'm/d/Y', $chargeDate ) . '</strong>.';
+        echo 'After today\'s payment, automatic payments will begin <strong>' . $this->date( 'm/d/Y', $chargeDate ) . '</strong>.';
     }
 
     public function api_new_program( $is_admin ) {
@@ -403,7 +406,7 @@ Phone: '.$_POST['phone']
                         // if membership not submitted yet
                         if ( self::MEMBERSHIP_NA == $membership->status || self::MEMBERSHIP_PENDING == $membership->status ) {
 
-                            // just set/change the contract id
+                            // set/change the contract id
                             $this->model()->update_membership( $membership->ID, array( 'contract_id' => $contract_id ) );
                         }
                     }
@@ -450,7 +453,6 @@ Phone: '.$_POST['phone']
                         $membership_update = array(
                             'contract_id' => $contract_id,
                             'status' => self::MEMBERSHIP_PENDING,
-                            'last_update' => current_time('mysql'),
                         );
                         $this->model()->update_membership( $membership->ID, $membership_update );
 
@@ -522,12 +524,12 @@ Phone: ' . get_user_meta( $user->ID, 'phone', true ) . '
             foreach ( $new_students as $student ) {
                 $message .= '
 Student Name: ' . $this->student_name( $student ) . '
-DOB: ' . date( 'm/d/Y', strtotime( $student->dob ) ) . '
+DOB: ' . $this->date( 'm/d/Y', strtotime( $student->dob ) ) . '
 Membership: ' . $student->contract->title . '
 
 ';
             }
-            wp_mail( $adminEmail, 'New Member Application '.time(), $message );
+            wp_mail( $adminEmail, 'New Member Application '.$this->time(), $message );
         } catch ( Exception $ex ) {
             debug( 'Error sending email ' . $ex->getMessage() );
         }
@@ -556,18 +558,65 @@ Membership: ' . $student->contract->title . '
 
         $contract = $this->model()->get_contract( $membership->contract_id );
         if ( self::CANCELLATION_ANYTIME == $contract->cancellation_policy ) {
-            $cancel_execute_date = current_time( 'mysql' );
+            $cancel_execute_date = $this->time( 'mysql' );
         } elseif ( self::CANCELLATION_DAYS == $contract->cancellation_policy ) {
-            $cancel_execute_date = date( 'm/d/Y', time() + $contract->cancellation_days );
+            $cancel_execute_date = $this->date( 'm/d/Y', $this->time() + $contract->cancellation_days * 24 * 3600 );
         } else {
             return 'Cancellation not permitted';
         }
 
         $this->model()->update_membership( $membership->ID, array(
-            'cancel_request_date'   => current_time( 'mysql' ),
+            'cancel_request_date'   => $this->time( 'mysql' ),
             'cancel_execute_date'   => $cancel_execute_date,
             'status'                => self::MEMBERSHIP_CANCELED,
         ));
+
+        do_action( 'dojo_membership_cancel_requested', $membership->ID );
+
+        return 'success';
+    }
+
+    public function api_record_payment_received( $is_admin ) {
+        if ( ! $is_admin ) {
+            return 'Access denied';
+        }
+        $membership = $this->model()->get_student_membership( $_POST['student'] );
+
+        $this->apply_membership_payment( $membership->ID, 1 );
+
+        return 'success';
+    }
+
+    public function api_approve_application( $is_admin ) {
+        if ( ! $is_admin ) {
+            return 'Access denied';
+        }
+        $membership = $this->model()->get_student_membership( $_POST['student'] );
+
+        if ( self::MEMBERSHIP_PAID != $membership->status ) {
+            return 'Membership not paid';
+        }
+
+        // get contract to determine membership end date
+        $contract = $this->model()->get_contract( $membership->contract_id );
+        if ( ! $contract ) {
+            return 'Error finding contract';
+        }
+        $end_date = $this->get_date_plus_months( $this->date('m/d/Y'), $contract->term_months );
+
+        $this->model()->update_membership( $membership->ID, array(
+            'status'    => self::MEMBERSHIP_ACTIVE,
+            'end_date'  => $end_date,
+        ) );
+
+        // get student record to see if this is a first time student
+        $student = $this->model()->get_student( $_POST['student'] );
+        if ( ! $student->start_date ) {
+            // first time student start date is now
+            $this->model()->update_student( $student->ID, array(
+                'start_date' => $this->time( 'mysql' ),
+            ) );
+        }
 
         return 'success';
     }
@@ -637,10 +686,74 @@ Membership: ' . $student->contract->title . '
     public function handle_dojo_update() {
         $this->debug( 'Running membership updates' );
 
-        // todo
-        // check for payment due
+        $month = (int) $this->date( 'n' );
+        $day   = (int) $this->date( 'j' );
+        $year  = (int) $this->date( 'Y' );
+
+        $month_start = strtotime( $month . '/1/' . $year );
+
+        $due_accounts = $this->model()->get_due_accounts();
+        $memberships_due = array();
+        $accounts = array();
+
+        // normalize accounts and memberships to user_id
+        foreach ( $due_accounts as $account ) {
+            $memberships_due[ $account->user_id ][] = $account;
+            $accounts[ $account->user_id ] = $account;
+        }
+
+        foreach ( $accounts as $user_id => $account ) {
+            if ( strtotime( $account->last_upcoming_payment_event ) < $month_start ) {
+                // update account
+                $this->model()->update_user_account( $user_id, array(
+                    'last_upcoming_payment_event'   => $this->time( 'mysql' )
+                ) );
+                do_action( 'dojo_membership_upcoming_payment_due', $memberships_due[ $user_id ] );
+            } elseif ( strtotime( $account->last_payment_event ) < $month_start and $day >= $account->billing_day ) {
+                // if updates didn't run so these run back to back the elseif will at least separate them by
+                // an update interval (currently one hour)
+
+                // change membership status to due or canceled-due
+                foreach ( $memberships_due[ $user_id ] as $membership ) {
+                    if ( self::MEMBERSHIP_ACTIVE == $membership->status ) {
+                        $this->model()->update_membership( $membership->membership_id, array(
+                            'status'    => self::MEMBERSHIP_DUE,
+                        ) );
+                    } elseif ( self::MEMBERSHIP_CANCELED == $membership->status ) {
+                         $this->model()->update_membership( $membership->membership_id, array(
+                            'status'    => self::MEMBERSHIP_CANCELED_DUE,
+                        ) );
+                    }
+                }
+
+                // update account
+                $this->model()->update_user_account( $user_id, array(
+                    'last_payment_event'   => $this->time( 'mysql' )
+                ) );
+                do_action( 'dojo_membership_payment_due', $memberships_due[ $user_id ] );
+            }
+        }
 
         // check for cancellation complete
+        $cancellations = $this->model()->get_completed_cancellations();
+        foreach ( $cancellations as $cancellation ) {
+            $this->model()->update_membership( $cancellation->membership_id, array(
+                'status'    => self::MEMBERSHIP_ENDED,
+            ) );
+            do_action( 'dojo_membership_ended', $cancellation->membership_id );
+        }
+
+        // check for membership ended
+        $ended_memberships = $this->model()->get_ended_memberships();
+        foreach ( $ended_memberships as $membership ) {
+             $this->model()->update_membership( $membership->membership_id, array(
+                'status'    => self::MEMBERSHIP_ENDED,
+            ) );
+            do_action( 'dojo_membership_ended', $membership->membership_id );
+        }
+
+        // todo
+        // check for freeze ended
 
     }
 
@@ -664,7 +777,7 @@ Membership: ' . $student->contract->title . '
     }
 
     public function render_option_membership_slug() {
-        $this->render_option_regular_text( 'membership_slug' );
+        $this->render_option_regular_text( 'membership_slug', 'All membership pages are under ' . esc_html( $this->membership_url( '' ) ) );
     }
 
 
@@ -977,9 +1090,15 @@ Membership: ' . $student->contract->title . '
     public function custom_page_title_membership( $path ) {
         switch ( $path ) {
             case '/students' :
-            case '/students/edit' :
-            case '/students/delete' :
                 $title = 'Students';
+                break;
+
+            case '/students/edit' :
+                $title = 'Student';
+                break;
+
+            case '/students/delete' :
+                $title = 'Edit Student';
                 break;
 
             case '/enroll' :
@@ -1001,6 +1120,7 @@ Membership: ' . $student->contract->title . '
                 } else {
                     $title = 'Membership Details';
                 }
+                break;
 
             case '/billing' :
                 $title = 'Manage Billing';
@@ -1074,8 +1194,8 @@ Membership: ' . $student->contract->title . '
 
         // if membership in application state
         if ( self::MEMBERSHIP_SUBMITTED == $membership->status ) {
-            // start date is today
-            $start_date = date('m/d/Y');
+            // start date is now
+            $start_date = $this->date('m/d/Y');
             $next_due = $this->get_date_plus_months( $start_date, $months );
             $this->model()->update_membership( $membership_id, array(
                 'start_date'    => $start_date,
@@ -1087,11 +1207,12 @@ Membership: ' . $student->contract->title . '
             $next_due = $this->get_date_plus_months( $membership->next_due_date, $months );
             $status = $membership->status;
 
-            // if next due is in the future this could cause status change
-            if ( strtotime( $next_due ) > time() ) {
+            // if next due is at least this month and we are not yet to billing day
+            // todo
+            if ( strtotime( $next_due ) > $this->time() ) {
                 if ( self::MEMBERSHIP_DUE == $status ) {
                     $status = self::MEMBERSHIP_ACTIVE;
-                } elseif ( self::MEMBERHSIP_CANCELED_DUE == $status ) {
+                } elseif ( self::MEMBERSHIP_CANCELED_DUE == $status ) {
                     $status = self::MEMBERSHIP_CANCELED;
                 }
             }
@@ -1192,7 +1313,7 @@ Membership: ' . $student->contract->title . '
             self::MEMBERSHIP_ACTIVE         == $status ||
             self::MEMBERSHIP_DUE            == $status ||
             self::MEMBERSHIP_CANCELED       == $status ||
-            self::MEMBERHSIP_CANCELED_DUE   == $status
+            self::MEMBERSHIP_CANCELED_DUE   == $status
             ;
     }
 
@@ -1206,7 +1327,7 @@ Membership: ' . $student->contract->title . '
     public function is_status_canceled( $status ) {
         return
             self::MEMBERSHIP_CANCELED       == $status ||
-            self::MEMBERHSIP_CANCELED_DUE   == $status
+            self::MEMBERSHIP_CANCELED_DUE   == $status
             ;
     }
 
@@ -1343,11 +1464,8 @@ Membership: ' . $student->contract->title . '
      * @return int
      */
     public function get_user_billing_day( $user_id ) {
-        $billing_day = get_user_meta( $user_id, 'billing_day', true );
-        if ( empty( $billing_day ) ) {
-            return 1;
-        }
-        return (int) $billing_day;
+        $account = $this->model()->get_user_account( $user_id );
+        return (int) $account->billing_day;
     }
 
     /**
@@ -1359,7 +1477,7 @@ Membership: ' . $student->contract->title . '
      * @return void
      */
     public function set_user_billing_day( $user_id, $billing_day ) {
-        update_user_meta( $user_id, 'billing_day', $billing_day );
+        $this->model()->update_user_account( $user_id, array( 'billing_day' => $billing_day ) );
     }
 
     /**
@@ -1372,9 +1490,9 @@ Membership: ' . $student->contract->title . '
      */
     public function get_date_plus_months( $date, $months ) {
         $time  = strtotime( $date );
-        $month = (int) date( 'n', $time );
-        $day   = (int) date( 'j', $time );
-        $year  = (int) date( 'Y', $time );
+        $month = (int) $this->date( 'n', $time );
+        $day   = (int) $this->date( 'j', $time );
+        $year  = (int) $this->date( 'Y', $time );
 
         // apply month adjustment
         $month += $months;
@@ -1407,13 +1525,13 @@ Membership: ' . $student->contract->title . '
         }
 
         // return formatted with zero padding
-        return date( 'm/d/Y', strtotime( $month . '/' . $day . '/' .$year ) );
+        return $this->date( 'm/d/Y', strtotime( $month . '/' . $day . '/' .$year ) );
     }
 
     public function get_charge_date( $day )
     {
-        $month = (int) date( 'n' ) + 1;
-        $year  = (int) date( 'Y' );
+        $month = (int) $this->date( 'n' ) + 1;
+        $year  = (int) $this->date( 'Y' );
 
         if ($month > 12) {
             $month = 1;
@@ -1421,9 +1539,9 @@ Membership: ' . $student->contract->title . '
         }
         return strtotime( $month . '/' . $day . '/' . $year );
 
-        $thisDay   = (int) date( 'j' );
-        $thisMonth = (int) date( 'n' );
-        $thisYear  = (int) date( 'Y' );
+        $thisDay   = (int) $this->date( 'j' );
+        $thisMonth = (int) $this->date( 'n' );
+        $thisYear  = (int) $this->date( 'Y' );
         $nextYear  = $thisYear;
         $nextMonth = $thisMonth + 1;
         if ( $nextMonth > 12 ) {

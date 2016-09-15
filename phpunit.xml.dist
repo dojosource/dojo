@@ -1,0 +1,20 @@
+<phpunit
+	bootstrap="tests/bootstrap.php"
+	backupGlobals="false"
+	colors="true"
+	convertErrorsToExceptions="true"
+	convertNoticesToExceptions="true"
+	convertWarningsToExceptions="true"
+	>
+	<testsuites>
+		<testsuite name="Dojo Core">
+			<directory prefix="test-" suffix=".php">./tests/</directory>
+		</testsuite>
+        <testsuite name="Dojo Membership">
+            <directory prefix="test-" suffix=".php">./extensions/dojo-membership/tests/</directory>
+        </testsuite>
+        <testsuite name="Dojo Invoice">
+            <directory prefix="test-" suffix=".php">./extensions/dojo-invoice/tests/</directory>
+        </testsuite>
+	</testsuites>
+</phpunit>

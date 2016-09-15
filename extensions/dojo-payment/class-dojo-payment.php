@@ -227,7 +227,7 @@ class Dojo_Payment extends Dojo_Extension {
 
         // record payment against invoice
         $invoice_payment_id = Dojo_Invoice::instance()->model()->add_invoice_payment( $invoice->ID, $amount_due, array(
-            'payment_date'  => date( 'Y-m-d H:i:s', $charge->created ),
+            'payment_date'  => $this->date( 'Y-m-d H:i:s', $charge->created ),
             'method'        => 'Online Charge',
         ) );
 
@@ -308,7 +308,7 @@ class Dojo_Payment extends Dojo_Extension {
 
         // record payment against invoice
         $invoice_payment_id = Dojo_Invoice::instance()->model()->add_invoice_payment( $invoice->ID, $amount_due, array(
-            'payment_date'  => date( 'Y-m-d H:i:s', $charge->created ),
+            'payment_date'  => $this->date( 'Y-m-d H:i:s', $charge->created ),
             'method'        => 'Online Charge',
         ) );
 

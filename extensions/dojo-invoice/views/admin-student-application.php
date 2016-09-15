@@ -11,7 +11,7 @@ wp_enqueue_style( 'dojo-invoice', $this->url( 'css/dojo-invoice.css' ) );
     <div class="dojo-info">All paid up and good to go!</div>
     <div class="dojo-clear-space"></div>
     <div class="dojo-error dojo-danger" style="display:none;"></div>
-    <button class="dojo-approve-membership">Approve Membership</button>
+    <button class="dojo-approve-membership button button-large">Approve Membership</button>
     <div class="dojo-clear-space"></div>
 
 <script>
@@ -71,7 +71,7 @@ jQuery(function($) {
                     <tr valign="top">
                         <th scope="row">Date</th>
                         <td>
-                            <input type="text" id="payment_date" name="payment_date" value="<?php echo esc_attr( date( 'm/d/Y' ) ) ?>">
+                            <input type="text" id="payment_date" name="payment_date" value="<?php echo esc_attr( $this->date( 'm/d/Y' ) ) ?>">
                         </td>
                     </tr>
                 </tbody>

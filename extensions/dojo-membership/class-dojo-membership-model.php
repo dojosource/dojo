@@ -11,6 +11,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
 
     // table names
     public $notifications;
+    public $accounts;
     public $students;
     public $memberships;
     public $membership_alerts;
@@ -25,6 +26,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
         global $wpdb;
 
         $this->notifications                    = $wpdb->prefix . 'dojo_notifications';
+        $this->accounts                         = $wpdb->prefix . 'dojo_accounts';
         $this->students                         = $wpdb->prefix . 'dojo_students';
         $this->memberships                      = $wpdb->prefix . 'dojo_memberships';
         $this->membership_alerts                = $wpdb->prefix . 'dojo_membership_alerts';
@@ -73,6 +75,144 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
     }
 
     /**
+     * Gets a user's account record. Creates a new empty account if none exists.
+     *
+     * @param int $user_id
+     *
+     * @return object
+     */
+    public function get_user_account( $user_id ) {
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "SELECT * FROM $this->accounts WHERE user_id = %d", $user_id );
+        $record = $wpdb->get_row( $sql );
+
+        if ( null === $record ) {
+            $wpdb->insert( $this->accounts, array(
+                'user_id'       => $user_id,
+                'billing_day'   => 1,
+            ) );
+            $record = $wpdb->get_row( $sql );
+        }
+
+        return $record;
+    }
+
+    /**
+     * Update a user account
+     *
+     * @param int $user_id
+     * @param array $params
+     *
+     * @return void
+     */
+    public function update_user_account( $user_id, $params ) {
+        global $wpdb;
+
+        // filter to only valid params
+        $update_params = $this->filter_params( $params, array(
+            'billing_day',
+            'last_payment_event',
+            'last_upcoming_payment_event',
+        ) );
+
+        $update_params = $this->fix_dates( $update_params, array(
+            'last_payment_event',
+            'last_upcoming_payment_event',
+        ) );
+
+        $where = array( 'user_id' => $user_id );
+        $wpdb->update( $this->accounts, $update_params, $where );
+    }
+
+    /**
+     * Get accounts that are ready to issue an upcoming payment event or payment event.
+     * Results may have multiple records for each account representing each student membership.
+     * All account records will be grouped together in the array results.
+     *
+     * @return array
+     */
+    public function get_due_accounts() {
+        global $wpdb;
+
+        $day   = (int) $this->date( 'j' );
+        $month = (int) $this->date( 'n' );
+        $year  = (int) $this->date( 'Y' );
+
+        $next_month = $month + 1;
+        if ( $next_month > 12 ) {
+            $next_month = 1;
+            $next_month_year = $year + 1;
+        } else {
+            $next_month_year = $year;
+        }
+
+        $month_start = $this->date( 'Y-m-d 00:00:00', strtotime( $month . '/1/' . $year ) );
+        $month_end = $this->date( 'Y-m-d 00:00:00', strtotime( $next_month . '/1/' . $next_month_year ) );
+
+        $sql = $wpdb->prepare( "SELECT a.*, m.*, m.ID as membership_id FROM $this->accounts a
+            INNER JOIN $this->students s ON a.user_id = s.user_id
+            INNER JOIN $this->memberships m ON s.current_membership_id = m.ID
+            WHERE %d >= a.billing_day - 1
+            AND m.next_due_date < %s
+            AND m.status IN( 'active', 'due', 'canceled', 'canceled-due' )
+            AND ( a.last_payment_event IS NULL OR a.last_upcoming_payment_event < %s OR a.last_payment_event < %s )
+            AND s.deleted_date IS NULL
+            ORDER BY a.ID
+            ", $day, $month_end, $month_start, $month_start );
+
+        return $wpdb->get_results( $sql );
+    }
+
+    /**
+     * Gets accounts that are ready to complete their cancellations.
+     * Results may have multiple records for each account representing each student membership.
+     * All account records will be grouped together in the array results.
+     *
+     * @return array
+     */
+    public function get_completed_cancellations() {
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "SELECT s.*, m.*, m.ID as membership_id FROM $this->accounts a
+            INNER JOIN $this->students s ON a.user_id = s.user_id
+            INNER JOIN $this->memberships m ON s.current_membership_id = m.ID
+            INNER JOIN $this->contracts c ON m.contract_id = c.ID
+            WHERE c.cancellation_policy IN ( 'anytime', 'days' )
+                AND m.cancel_request_date IS NOT NULL
+                AND m.status IN( 'canceled', 'canceled-due' )
+                AND ( c.cancellation_policy <> 'days' OR DATE_ADD(m.cancel_request_date, INTERVAL IFNULL(c.cancellation_days, 0) DAY) < %s )
+                AND s.deleted_date IS NULL
+                ORDER BY a.ID
+            ", $this->time( 'mysql') );
+
+        return $wpdb->get_results( $sql );
+    }
+
+    /**
+     * Gets active accounts that have reached their end date.
+     * Results may have multiple records for each account representing each student membership.
+     * All account records will be grouped together in the array results.
+     *
+     * @return array
+     */
+    public function get_ended_memberships() {
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "SELECT s.*, m.*, m.ID as membership_id FROM $this->accounts a
+            INNER JOIN $this->students s ON a.user_id = s.user_id
+            INNER JOIN $this->memberships m ON s.current_membership_id = m.ID
+            INNER JOIN $this->contracts c ON m.contract_id = c.ID
+            WHERE m.status IN( 'active', 'due', 'canceled', 'canceled-due' )
+                AND m.end_date <= %s
+                AND s.deleted_date IS NULL
+                ORDER BY a.ID
+            ", $this->time( 'mysql' ) );
+
+        return $wpdb->get_results( $sql );
+    }
+
+    /**
      * Gets a student's membership record. Creates a new empty membership if none exists.
      *
      * @param string $student_id
@@ -112,6 +252,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
         // filter to only valid params
         $update_params = $this->filter_params( $params, array(
             'start_date',
+            'end_date',
             'next_due_date',
             'contract_id',
             'status',
@@ -126,6 +267,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
 
         $update_params = $this->fix_dates( $update_params, array(
             'start_date',
+            'end_date',
             'next_due_date',
             'freeze_request_date',
             'freeze_end_date',
@@ -133,7 +275,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
             'cancel_execute_date',
         ) );
 
-        $update_params['last_update'] = current_time( 'mysql' );
+        $update_params['last_update'] = $this->time( 'mysql' );
 
         $where = array( 'ID' => $membership_id );
         $wpdb->update( $this->memberships, $update_params, $where );
@@ -657,7 +799,6 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
             'dob',
             'notes',
             'start_date',
-            'is_active',
             'belt',
         ) );
 
@@ -689,7 +830,6 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
             'dob',
             'notes',
             'start_date',
-            'is_active',
             'current_membership_id',
             'belt',
             'delete_date',
@@ -730,8 +870,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
         global $wpdb;
 
         $params = array(
-            'is_active'     => 0,
-            'deleted_date'  => current_time( 'mysql' ),
+            'deleted_date'  => $this->time( 'mysql' ),
         );
 
         $where = array( 'ID' => $student_id );
@@ -756,7 +895,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
         $membership_id = $this->get_student_membership( $student_id )->ID;
 
         $insert_params = array(
-            'charge_date'       => current_time( 'mysql' ),
+            'charge_date'       => $this->time( 'mysql' ),
             'membership_id'     => $membership_id,
             'student_id'        => $student_id,
             'description'       => $description,
@@ -779,7 +918,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
         global $wpdb;
 
         $insert_params = array(
-            'invoice_date'      => current_time( 'mysql' ),
+            'invoice_date'      => $this->time( 'mysql' ),
             'user_id'           => $user_id,
         );
 
@@ -859,7 +998,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
         $membership_id = $this->get_user_membership( $user_id )->ID;
 
         $insert_params = array(
-            'charge_date' => current_time( 'mysql' ),
+            'charge_date' => $this->time( 'mysql' ),
             'membership_id' => $membership_id,
             'description' => $description,
             'amount_cents' => $amount_cents,

@@ -13,7 +13,7 @@ $invoices_not_paid = $this->invoices_not_paid;
                 <br />
                 Invoice <?php echo esc_html( str_pad( $invoice->ID, 7, '0', STR_PAD_LEFT ) ) ?>
                 <br />
-                <?php echo esc_html( date( 'm/d/Y', strtotime( $invoice->invoice_date ) ) ) ?>
+                <?php echo esc_html( $this->date( 'm/d/Y', strtotime( $invoice->invoice_date ) ) ) ?>
             </div>
             <div class="dojo-right">
                 <div style="text-align:right">

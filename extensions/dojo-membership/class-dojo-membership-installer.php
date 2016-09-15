@@ -8,6 +8,7 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
 
     // table names
     private $notifications;
+    private $accounts;
     private $students;
     private $memberships;
     private $membership_alerts;
@@ -24,6 +25,7 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
         parent::__construct( __CLASS__ );
 
         $this->notifications                    = $wpdb->prefix . 'dojo_notifications';
+        $this->accounts                         = $wpdb->prefix . 'dojo_accounts';
         $this->students                         = $wpdb->prefix . 'dojo_students';
         $this->memberships                      = $wpdb->prefix . 'dojo_memberships';
         $this->membership_alerts                = $wpdb->prefix . 'dojo_membership_alerts';
@@ -48,6 +50,7 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
         if ( $rev >= 1 ) {
             $rev1_tables = array(
                 $this->notifications,
+                $this->accounts,
                 $this->students,
                 $this->memberships,
                 $this->membership_alerts,
@@ -67,6 +70,8 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
 
     public function activate() {
         global $wp_rewrite;
+
+        parent::activate();
 
         // flush rewrite rules to pick up membership url slug
         $wp_rewrite->flush_rules( false );
@@ -96,6 +101,20 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
         ' );
 
         $wpdb->query( '
+            CREATE TABLE ' . $this->accounts . ' (
+            ID INT NOT NULL AUTO_INCREMENT,
+            user_id INT NULL,
+            timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            billing_day INT NULL,
+            last_payment_event DATETIME NULL,
+            last_upcoming_payment_event DATETIME NULL,
+            PRIMARY KEY (ID),
+            KEY user_id (user_id),
+            KEY last_payment_event (last_payment_event),
+            KEY last_upcoming_payment_event (last_upcoming_payment_event));
+        ' );
+
+        $wpdb->query( '
             CREATE TABLE ' . $this->students . ' (
             ID INT NOT NULL AUTO_INCREMENT,
             user_id INT NULL,
@@ -106,13 +125,11 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
             dob DATETIME NULL,
             notes TEXT NULL,
             start_date DATETIME NULL,
-            is_active TINYINT NULL,
             current_membership_id INT NULL,
             belt INT NULL,
             deleted_date DATETIME NULL,
             PRIMARY KEY (ID),
             KEY user_id (user_id),
-            KEY is_active (is_active),
             KEY delete_date (deleted_date));
         ' );
 
@@ -121,6 +138,7 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
             ID INT NOT NULL AUTO_INCREMENT,
             timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
             start_date DATETIME NULL,
+            end_date DATETIME NULL,
             next_due_date DATETIME NULL,
             contract_id INT NULL,
             status VARCHAR(255) NULL,

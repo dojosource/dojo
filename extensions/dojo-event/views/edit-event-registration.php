@@ -30,8 +30,9 @@ $price_plan = new Dojo_Price_Plan( $price );
     <table class="form-table">
         <tbody>
             <tr valign="top">
-                <th scope="row">Enable Guest Registration</th>
+                <th scope="row" style="text-decoration:line-through">Enable Guest Registration</th>
                 <td>
+                    (Feature coming soon)
                     <p>
                         <input type="checkbox" id="enable-guest" name="registration[enable_guest]" value="1" <?php checked( $enable_guest, 1 ) ?>>
                     </p>

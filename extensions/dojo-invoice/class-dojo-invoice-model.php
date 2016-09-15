@@ -59,7 +59,7 @@ class Dojo_Invoice_Model extends Dojo_Model_Base {
         $insert_params['amount_cents']  = $amount_cents;
 
         if ( ! isset( $insert_param['charge_date'] ) ) {
-            $insert_params['charge_date'] = current_time( 'mysql' );
+            $insert_params['charge_date'] = $this->time( 'mysql' );
         }
 
         $wpdb->insert( $this->charges, $insert_params );
@@ -78,7 +78,7 @@ class Dojo_Invoice_Model extends Dojo_Model_Base {
         global $wpdb;
 
         $insert_params = array(
-            'invoice_date'      => current_time( 'mysql' ),
+            'invoice_date'      => $this->time( 'mysql' ),
             'user_id'           => $user_id,
             'description'       => $description,
         );

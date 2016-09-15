@@ -44,6 +44,8 @@ jQuery(function($) {
     });
 
     $('.dojo-execute-payment').click(function() {
+        $('.dojo-some-sources').hide();
+        $('.dojo-please-wait').show();
         var data = {
             invoice_id: '<?php echo esc_attr( $invoice->ID ) ?>',
             source_id: $('input[name=source]:checked').val()
@@ -55,6 +57,8 @@ jQuery(function($) {
             else {
                 $('.dojo-error').text(response);
                 $('.dojo-error-container').show();
+                $('.dojo-please-wait').hide();
+                $('.dojo-some-sources').show();
             }
         });
     });

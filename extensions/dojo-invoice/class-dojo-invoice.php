@@ -77,7 +77,7 @@ class Dojo_Invoice extends Dojo_Extension {
         $user_id = wp_get_current_user()->ID;
         $this->load_user_invoice_info( $user_id );
 
-        if ( 1 != count( $this->invoices_not_paid ) ) {
+        if ( count( $this->invoices_not_paid ) >= 1 ) {
             if ( 1 == count( $this->invoices_not_paid ) ) {
                 $dojo_membership->add_notification( 'You have an unpaid invoice.' );
             }

@@ -23,6 +23,13 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
     }
 
     /**
+     * @return bool
+     */
+    public function family_pricing_enabled() {
+        return isset( $this->state->family_pricing ) && 1 == $this->state->family_pricing;
+    }
+
+    /**
      * Gets the monthly price for the Nth person in the household
      *
      * @param int $person Starting at 1
@@ -39,6 +46,7 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
         }
 
         $person_count = 0;
+        $price = 0;
         for ( $rule = 1; $rule <= $rule_count; $rule ++ ) {
             $price_x = 'price_' . $rule;
             $count_x = 'count_' . $rule;

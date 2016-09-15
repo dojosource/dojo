@@ -20,7 +20,7 @@ $student = $this->current_student;
             <?php echo esc_html( $student->first_name . ' ' . $student->last_name . ( '' != $student->alias && $student->first_name != $student->alias ? ' (' . $student->alias . ')' : '' ) ) ?>
         </h3>
         <div style="float:left;">
-            DOB: <?php echo date( 'm/d/Y', strtotime( $student->dob ) ) ?>
+            DOB: <?php echo $this->date( 'm/d/Y', strtotime( $student->dob ) ) ?>
         </div>
         <div class="dojo-clear"></div>
         <?php if ( null !== $student->current_membership_id ) : ?>

@@ -15,7 +15,7 @@ $checkout_table = new Dojo_Checkout_Table( $line_items, array( 'render_simple_to
         <div class="dojo-col-md-7">
             <?php if ( 0 != count( $unenrolled_students ) ) : ?>
 
-            <h2>Select a Membership</h2>
+            <h3>Select a Membership</h3>
             <?php if ( 1 == count( $unenrolled_students ) ) : ?>
             <p>Please select a membership for this student.</p>
             <?php else : ?>
@@ -46,7 +46,7 @@ $checkout_table = new Dojo_Checkout_Table( $line_items, array( 'render_simple_to
                 <div class="dojo-monthly-pricing">
                     <div class="dojo-clear-space"></div>
 
-                    <h2>Your Monthly Pricing</h2>
+                    <h3>Your Monthly Pricing</h3>
 
                     <div class="dojo-checkout"<?php 0 == count( $line_items ) ? ' style="display:none;"' : '' ?>>
                     <?php $checkout_table->render() ?>
@@ -64,7 +64,7 @@ $checkout_table = new Dojo_Checkout_Table( $line_items, array( 'render_simple_to
             <?php endif; ?>
 
             <?php if ( 0 != count( $active_students ) ) : ?>
-            <h2>Student Enrollment</h2>
+            <h3>Student Enrollment</h3>
             <div class="dojo-select-list">
                 <?php foreach ( $active_students as $student ) : ?>
                 <div class="dojo-select-list-item">
@@ -82,7 +82,7 @@ $checkout_table = new Dojo_Checkout_Table( $line_items, array( 'render_simple_to
 
         <div class="dojo-col-md-5">
             <div class="dojo-block">
-                <h2>Membership Offerings</h2>
+                <h3>Membership Offerings</h3>
                 <div class="dojo-select-list">
                     <?php foreach ( $contracts as $contract ) : ?>
                     <div class="dojo-select-list-item dojo-membership-details" data-id="<?php echo esc_attr( $contract->ID ) ?>">

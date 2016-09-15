@@ -36,7 +36,7 @@ class Dojo_Model_Base extends Dojo_WP_Base {
     protected function fix_dates( $params, $names ) {
         foreach ( $names as $name ) {
             if ( isset( $params[ $name ] ) ) {
-                $params[ $name ] = date( 'Y-m-d 00:00:00', strtotime( $params[ $name ] ) );
+                $params[ $name ] = $this->date( 'Y-m-d 00:00:00', strtotime( $params[ $name ] ) );
             }
         }
         return $params;
