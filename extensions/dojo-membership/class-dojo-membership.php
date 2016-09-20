@@ -6,6 +6,7 @@
 if ( ! defined( 'ABSPATH' ) ) { die(); }
 
 // non-standard class dependencies
+require_once 'class-dojo-rank-types-table.php';
 require_once 'class-dojo-programs-table.php';
 require_once 'class-dojo-contracts-table.php';
 require_once 'class-dojo-documents-table.php';
@@ -18,6 +19,7 @@ class Dojo_Membership extends Dojo_Extension {
     protected $selected_contract;
     protected $selected_program;
     protected $selected_document;
+    protected $selected_rank_type;
 
     /**** membership statuses ****/
 
@@ -207,6 +209,56 @@ Phone: '.$_POST['phone']
         wp_redirect( admin_url( 'admin.php?page=dojo-programs' ) );
     }
 
+    public function api_new_rank_type( $is_admin ) {
+        if ( ! $is_admin ) {
+            die( 'Access Denied' );
+        }
+
+        $this->model()->create_rank_type( $_POST );
+
+        wp_redirect( admin_url( 'admin.php?page=dojo-ranks' ) );
+    }
+
+    public function api_save_rank_type( $is_admin ) {
+        if ( ! $is_admin ) {
+            die( 'Access Denied' );
+        }
+
+        if ( ! isset( $_POST['rank_type_id'] ) ) {
+            $rank_type_id = $this->model()->create_rank_type( $_POST );
+        } else {
+            $rank_type_id = $_POST['rank_type_id'];
+            $this->model()->update_rank_type( $rank_type_id, $_POST );
+        }
+
+        $ranks = json_decode( str_replace( '\"', '"', $_POST['ranks'] ) );
+
+        foreach ( $ranks as $index => $rank ) {
+            if ( isset( $rank->id ) ) {
+                $rank_id = $rank->id;
+            } else {
+                $rank_id = $this->model()->create_rank( $rank_type_id, $rank->title );
+            }
+            $this->model()->update_rank( $rank_id, array(
+                'title'         => $rank->title,
+                'order_index'   => $index,
+            ) );
+        }
+
+        wp_redirect( admin_url( 'admin.php?page=dojo-ranks' ) );
+    }
+
+    public function api_delete_rank_type( $is_admin ) {
+        if ( ! $is_admin ) {
+            die( 'Access Denied' );
+        }
+
+        if ( isset( $_POST['rank_type_id'] ) ) {
+            $this->model()->delete_rank_type( $_POST['rank_type_id'] );
+        }
+        wp_redirect( admin_url( 'admin.php?page=dojo-ranks' ) );
+    }
+
     public function api_save_contract( $is_admin ) {
         if ( ! $is_admin ) {
             die( 'Access Denied' );
@@ -242,6 +294,17 @@ Phone: '.$_POST['phone']
         $this->model()->set_contract_documents( $_POST['contract_id'], $contract_documents );
 
         wp_redirect( admin_url( 'admin.php?page=dojo-contracts' ) );
+    }
+
+    public function api_delete_rank( $is_admin ) {
+        if ( ! $is_admin ) {
+            die( 'Access Denied' );
+        }
+
+        if ( isset( $_POST['rank_id'] ) ) {
+            $this->model()->delete_rank( $_POST['rank_id'] );
+        }
+        return 'success';
     }
 
     public function api_delete_contract( $is_admin ) {
@@ -346,8 +409,14 @@ Phone: '.$_POST['phone']
         $user = wp_get_current_user();
 
         if ( isset( $_POST['student_id'] ) ) {
-            if ( $this->model()->is_user_student( $user->ID, $_POST['student_id'] ) ) {
+            if ( $is_admin || $this->model()->is_user_student( $user->ID, $_POST['student_id'] ) ) {
                 $this->model()->update_student( $_POST['student_id'], $_POST );
+                foreach ( $_POST as $key => $value ) {
+                    if ( 0 === strpos( $key, 'rank_type_' ) ) {
+                        $rank_type_id = substr( $key, 10 );
+                        $this->model()->set_student_rank( $_POST['student_id'], $rank_type_id, $value );
+                    }
+                }
             } else {
                 echo 'Invalid id';
             }
@@ -659,6 +728,7 @@ Membership: ' . $student->contract->title . '
     
     public function handle_dojo_register_menus( $menus ) {
         $menus->add_menu( 'Students', $this );
+        $menus->add_menu( 'Ranks', $this );
         $menus->add_menu( 'Programs', $this );
         $menus->add_menu( 'Contracts', $this );
         $menus->add_menu( 'Documents', $this );
@@ -782,6 +852,38 @@ Membership: ' . $student->contract->title . '
 
 
     /**** Render Menus ****/
+
+    public function render_menu_ranks() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( 'Access denied' );
+        }
+
+        // instantiate programs table
+        $this->rank_types_table = new Dojo_Rank_Types_Table( $this->model() );
+
+        // render view for current action
+        if ( isset ( $_GET['action'] ) ) {
+            switch ( $_GET['action'] ) {
+                case 'add-new' :
+                    echo $this->render( 'rank-types-edit' );
+                    break;
+
+                case 'edit' :
+                    $this->selected_rank_type = $this->model()->get_rank_type( $_GET['rank_type'] );
+                    $this->ranks = $this->model()->get_ranks( $_GET['rank_type'] );
+                    echo $this->render( 'rank-types-edit' );
+                    break;
+
+                case 'delete' :
+                    $this->selected_rank_type = $this->model()->get_rank_type( $_GET['rank_type'] );
+                    echo $this->render( 'rank-types-delete' );
+                    break;
+            }
+        } else {
+            // main menu view
+            echo $this->render( 'rank-types-menu' );
+        }
+    }
 
     public function render_menu_programs() {
         if ( ! current_user_can( 'manage_options' ) ) {
@@ -912,6 +1014,17 @@ Membership: ' . $student->contract->title . '
                 case 'edit' :
                     $this->selected_student = $this->model()->get_student( $_GET['student'] );
                     $this->selected_student->contract = $this->model()->get_contract( $this->selected_student->contract_id );
+                    $this->rank_types = $this->model()->get_rank_types();
+                    foreach ( $this->rank_types as $index => $rank_type ) {
+                        $ranks = $this->model()->get_ranks( $rank_type->ID );
+                        if ( is_array( $ranks ) ) {
+                            $this->rank_types[ $index ]->ranks = $ranks;
+                            $student_rank =
+                            $this->rank_types[ $index ]->student_rank = $this->model()->get_student_rank( $this->selected_student->ID, $rank_type->ID );
+                        } else {
+                            $this->rank_types[ $index ]->ranks = array();
+                        }
+                    }
                     echo $this->render( 'students-edit' );
                     break;
 

@@ -37,6 +37,14 @@
     margin: 0px;
 }
 
+.dojo-sortable li {
+    background-color: #fff;
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    max-width: 400px;
+    cursor: move;
+}
+
 .dojo .form-table input[type=radio] {
     margin-top: 5px;
     margin-bottom: 5px;

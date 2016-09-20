@@ -8,6 +8,8 @@ if ( null === $student ) {
 
 $student_name = Dojo_Membership::instance()->student_name( $student );
 
+$rank_types = $this->rank_types;
+
 wp_enqueue_script( 'jquery-ui-datepicker' );
 wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css' );
 ?>
@@ -51,6 +53,23 @@ wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryu
                     <th scope="row">Birth Date</th>
                     <td>
                         <input type="text" id="dob" name="dob" value="<?php echo esc_attr( $this->date( 'm/d/Y', strtotime( $student->dob ) ) ) ?>">
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Rank</th>
+                    <td>
+                        <?php if ( 0 == count( $rank_types ) ) : ?>
+                        <div class="dojo-info">No rank types have been created yet.</div>
+                        <?php else : ?>
+                            <?php foreach ( $rank_types as $rank_type ) : ?>
+                            <label for="rank_type_<?php echo $rank_type->ID ?>" style="display:block;margin-top:5px;"><?php echo esc_html( $rank_type->title ) ?>:</label>
+                            <select id="rank_type_<?php echo $rank_type->ID ?>" name="rank_type_<?php echo $rank_type->ID ?>">
+                                <?php foreach ( $rank_type->ranks as $rank ) : ?>
+                                <option value="<?php echo $rank->ID ?>" <?php selected( $rank->ID, $rank_type->student_rank->ID ) ?>><?php echo esc_html( $rank->title ) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </td>
                 </tr>
             </tbody>

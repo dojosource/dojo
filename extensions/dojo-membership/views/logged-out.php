@@ -3,7 +3,7 @@
 Already have an account? <a href="<?php echo wp_login_url( get_permalink() ); ?>" title="Log In">Log in here</a>.
 </p>
 
-<form id="dojo-signup" action="<?= esc_url( $this->ajax( 'signup' ) ) ?>" method="POST">
+<form id="dojo-signup" action="#" method="POST">
     <div class="dojo-field">
         <label for="firstname">First Name</label>
         <input type="text" id="firstname" name="firstname" size="30" required>

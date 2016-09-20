@@ -15,6 +15,9 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
     public $students;
     public $memberships;
     public $membership_alerts;
+    public $rank_types;
+    public $ranks;
+    public $student_ranks;
     public $programs;
     public $contracts;
     public $contract_programs;
@@ -30,6 +33,9 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
         $this->students                         = $wpdb->prefix . 'dojo_students';
         $this->memberships                      = $wpdb->prefix . 'dojo_memberships';
         $this->membership_alerts                = $wpdb->prefix . 'dojo_membership_alerts';
+        $this->rank_types                       = $wpdb->prefix . 'dojo_rank_types';
+        $this->ranks                            = $wpdb->prefix . 'dojo_ranks';
+        $this->student_ranks                    = $wpdb->prefix . 'dojo_student_ranks';
         $this->programs                         = $wpdb->prefix . 'dojo_programs';
         $this->contracts                        = $wpdb->prefix . 'dojo_contracts';
         $this->contract_programs                = $wpdb->prefix . 'dojo_contract_programs';
@@ -322,6 +328,271 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
             $sql .= $wpdb->prepare( " AND status <> %s", Dojo_Membership::MEMBERSHIP_ENDED );
         }
 
+        return $wpdb->get_results( $sql );
+    }
+
+     /**
+     * Gets a rank type record by id. Returns null if not found.
+     *
+     * @param int $rank_type_id
+     *
+     * @return object Rank type record
+     */
+    public function get_rank_type( $rank_type_id ) {
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "SELECT * FROM $this->rank_types WHERE ID = %d", $rank_type_id );
+        return $wpdb->get_row( $sql );
+    }
+
+    /**
+     * Gets all rank type records
+     *
+     * @param $output_type output type predefined constant
+     *
+     * @return array( object )
+     */
+    public function get_rank_types( $output_type = OBJECT ) {
+        global $wpdb;
+
+        return $wpdb->get_results( "SELECT * FROM $this->rank_types", $output_type );
+    }
+
+    /**
+     * Create a new rank type record.
+     *
+     * @param array Insert params. Unsupported params will be filtered out so you can pass in a full $_POST.
+     *
+     * @return int ID of new record.
+     */
+    public function create_rank_type( $params ) {
+        global $wpdb;
+
+        // filter to only valid params
+        $insert_params = $this->filter_params( $params, array(
+            'title',
+            'description',
+        ) );
+
+        $wpdb->insert( $this->rank_types, $insert_params );
+
+        return $wpdb->insert_id;
+    }
+
+    /**
+     * Update a rank type record
+     *
+     * @param int $rank_type_id
+     * @param array $params
+     *
+     * @return void
+     */
+    public function update_rank_type( $rank_type_id, $params ) {
+        global $wpdb;
+
+        // filter to only valid params
+        $update_params = $this->filter_params( $params, array(
+            'title',
+            'description',
+        ) );
+
+        $where = array( 'ID' => $rank_type_id );
+        $wpdb->update( $this->rank_types, $update_params, $where );
+    }
+
+    /**
+     * Delete a rank type record. Will also delete associated ranks and student rank records.
+     *
+     * @param int $rank_type_id
+     *
+     * @return void
+     */
+    public function delete_rank_type( $rank_type_id ) {
+        global $wpdb;
+
+        $ranks = $this->get_ranks( $rank_type_id );
+        foreach ( $ranks as $rank ) {
+            $this->delete_rank( $rank->ID );
+        }
+
+        $where = array( 'ID' => $rank_type_id );
+        $wpdb->delete( $this->rank_types, $where );
+    }
+
+     /**
+      * Create a new rank record.
+      *
+      * @param int $rank_type_id
+      * @param string $title
+      *
+      * @return int ID of new record.
+      */
+    public function create_rank( $rank_type_id, $title ) {
+        global $wpdb;
+
+        // filter to only valid params
+        $insert_params = array(
+            'rank_type_id'  => $rank_type_id,
+            'title'         => $title,
+        );
+
+        $wpdb->insert( $this->ranks, $insert_params );
+
+        return $wpdb->insert_id;
+    }
+
+    /**
+     * Update a rank record
+     *
+     * @param int $rank_id
+     * @param array $params
+     *
+     * @return void
+     */
+    public function update_rank( $rank_id, $params ) {
+        global $wpdb;
+
+        // filter to only valid params
+        $update_params = $this->filter_params( $params, array(
+            'title',
+            'order_index',
+        ) );
+
+        $where = array( 'ID' => $rank_id );
+        $wpdb->update( $this->ranks, $update_params, $where );
+    }
+
+    /**
+     * Delete a rank record. Will also delete associated student ranks.
+     *
+     * @param int $rank_id
+     *
+     * @return void
+     */
+    public function delete_rank( $rank_id ) {
+        global $wpdb;
+
+        $where = array( 'ID' => $rank_id );
+        $wpdb->delete( $this->ranks, $where );
+
+        $where = array( 'rank_id' => $rank_id );
+        $wpdb->delete( $this->student_ranks, $where );
+    }
+
+    /**
+     * Sets student rank for a given rank type
+     *
+     * @param $student_id
+     * @param $rank_type_id
+     * @param $rank_id
+     */
+    public function set_student_rank( $student_id, $rank_type_id, $rank_id ) {
+        global $wpdb;
+
+        // get current rank which will create a db entry for rank type if none exists
+        $old_rank = $this->get_student_rank( $student_id, $rank_type_id );
+
+        // update student rank
+        $update_params = array(
+            'rank_id'   => $rank_id,
+        );
+        $where = array(
+            'student_id'    => $student_id,
+            'rank_id'       => $old_rank->ID,
+        );
+
+        $wpdb->update( $this->student_ranks, $update_params, $where );
+    }
+
+    /**
+     * Get rank record for a given student and rank type.
+     *
+     * @param $student_id
+     * @param $rank_type_id
+     * @return object
+     */
+    public function get_student_rank( $student_id, $rank_type_id ) {
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "SELECT r.* FROM $this->rank_types rt
+            INNER JOIN $this->ranks r ON rt.ID = r.rank_type_id
+            INNER JOIN $this->student_ranks sr ON r.ID = sr.rank_id
+            WHERE sr.student_id = %d AND rt.ID = %d",
+            $student_id, $rank_type_id
+        );
+        $record = $wpdb->get_row( $sql );
+
+        if ( NULL === $record ) {
+
+            // get default rank
+            $default_rank_id = $this->get_default_rank( $rank_type_id );
+
+            // create record with default rank
+            $params = array(
+                'student_id'    => $student_id,
+                'rank_id'       => $default_rank_id,
+            );
+            $wpdb->insert( $this->student_ranks, $params );
+
+            $sql = $wpdb->prepare( "SELECT * FROM $this->ranks WHERE ID = %d", $default_rank_id );
+            $record = $wpdb->get_row( $sql );
+        }
+
+        return $record;
+    }
+
+    /**
+     * Gets the default rank id for a given rank type.
+     * Will set default to lowest rank if not already set.
+     * On error will return null.
+     *
+     * @param $rank_type_id
+     * @return mixed
+     */
+    public function get_default_rank( $rank_type_id ) {
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "SELECT * FROM $this->rank_types WHERE ID = %d", $rank_type_id );
+        $rank_type_record = $wpdb->get_row( $sql );
+
+        if ( NULL == $rank_type_record ) {
+            $this->debug( 'Rank type not found' );
+            return NULL;
+        }
+
+        if ( NULL !== $rank_type_record->default_rank_id ) {
+            return $rank_type_record->default_rank_id;
+        }
+
+        // no default set so create a default based on first rank in order
+        $sql = $wpdb->prepare( "SELECT * FROM $this->ranks
+            WHERE rank_type_id = %d
+            ORDER BY order_index ASC",
+            $rank_type_id
+        );
+        $start_rank = $wpdb->get_row( $sql );
+        if ( NULL == $start_rank ) {
+            $this->debug( 'No ranks for rank type ' . $rank_type_id );
+            return NULL;
+        }
+        $default_rank_id = $start_rank->ID;
+
+        // update default on rank type record
+        $wpdb->update( $this->rank_types, array( 'default_rank_id' => $default_rank_id ), array( 'ID' => $rank_type_id ) );
+
+        return $default_rank_id;
+    }
+
+    /**
+     * Get all ranks for a given rank type in order starting with lowest.
+     *
+     * @param $rank_type_id
+     * @return array( object )
+     */
+    public function get_ranks( $rank_type_id ) {
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "SELECT * FROM $this->ranks WHERE rank_type_id = %d ORDER BY order_index ASC", $rank_type_id );
         return $wpdb->get_results( $sql );
     }
 

@@ -12,6 +12,9 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
     private $students;
     private $memberships;
     private $membership_alerts;
+    private $rank_types;
+    private $ranks;
+    private $student_ranks;
     private $programs;
     private $contracts;
     private $contract_programs;
@@ -29,6 +32,9 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
         $this->students                         = $wpdb->prefix . 'dojo_students';
         $this->memberships                      = $wpdb->prefix . 'dojo_memberships';
         $this->membership_alerts                = $wpdb->prefix . 'dojo_membership_alerts';
+        $this->rank_types                       = $wpdb->prefix . 'dojo_rank_types';
+        $this->ranks                            = $wpdb->prefix . 'dojo_ranks';
+        $this->student_ranks                    = $wpdb->prefix . 'dojo_student_ranks';
         $this->programs                         = $wpdb->prefix . 'dojo_programs';
         $this->contracts                        = $wpdb->prefix . 'dojo_contracts';
         $this->contract_programs                = $wpdb->prefix . 'dojo_contract_programs';
@@ -54,6 +60,9 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
                 $this->students,
                 $this->memberships,
                 $this->membership_alerts,
+                $this->rank_types,
+                $this->ranks,
+                $this->student_ranks,
                 $this->programs,
                 $this->contracts,
                 $this->contract_programs,
@@ -126,7 +135,6 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
             notes TEXT NULL,
             start_date DATETIME NULL,
             current_membership_id INT NULL,
-            belt INT NULL,
             deleted_date DATETIME NULL,
             PRIMARY KEY (ID),
             KEY user_id (user_id),
@@ -173,6 +181,41 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
             KEY student_id (student_id),
             KEY start_date (start_date),
             KEY cleared_date (cleared_date));
+        ' );
+
+        $wpdb->query( '
+            CREATE TABLE ' . $this->rank_types . ' (
+            ID INT NOT NULL AUTO_INCREMENT,
+            timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            title VARCHAR(255) NULL,
+            description TEXT NULL,
+            default_rank_id INT NULL,
+            PRIMARY KEY (ID),
+            KEY title (title));
+        ' );
+
+        $wpdb->query( '
+            CREATE TABLE ' . $this->ranks . ' (
+            ID INT NOT NULL AUTO_INCREMENT,
+            timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            rank_type_id INT NULL,
+            order_index INT NULL,
+            title VARCHAR(255) NULL,
+            description TEXT NULL,
+            PRIMARY KEY (ID),
+            KEY rank_type_id (rank_type_id),
+            KEY order_index (order_index));
+        ' );
+
+        $wpdb->query( '
+            CREATE TABLE ' . $this->student_ranks . ' (
+            ID INT NOT NULL AUTO_INCREMENT,
+            timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            student_id INT NULL,
+            rank_id INT NULL,
+            PRIMARY KEY (ID),
+            KEY student_id (student_id),
+            KEY rank_id (rank_id));
         ' );
 
         $wpdb->query( '
