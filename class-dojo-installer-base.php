@@ -55,8 +55,8 @@ class Dojo_Installer_Base extends Dojo_WP_Base {
     public function uninstall() {
         global $wpdb;
 
-        $sql = $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name = %s", $this->installer_name );
-        $this->debug( $sql );
+        // remove revision tracking option
+        $sql = $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name = %s", $this->installer_name . '_revision' );
         $wpdb->query( $sql );
     }
 
