@@ -71,10 +71,10 @@ class Dojo_Installer extends Dojo_Installer_Base {
 
         // remove dummy page
         wp_trash_post( get_option( 'dojo_dummy_page' ) );
-        $wpdb->query( "DELETE FROM $wpdb->options WHERE option_name = dojo_dummy_page" );
+        $wpdb->query( "DELETE FROM $wpdb->options WHERE option_name = 'dojo_dummy_page'" );
 
         // remove plugin options
-        $wpdb->query( "DELETE FROM $wpdb->options WHERE option_name = dojo_options" );
+        $wpdb->query( "DELETE FROM $wpdb->options WHERE option_name = 'dojo_options'" );
     }
 
     public function rev_1() {

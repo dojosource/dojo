@@ -56,6 +56,7 @@ class Dojo_Installer_Base extends Dojo_WP_Base {
         global $wpdb;
 
         $sql = $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name = %s", $this->installer_name );
+        $this->debug( $sql );
         $wpdb->query( $sql );
     }
 
