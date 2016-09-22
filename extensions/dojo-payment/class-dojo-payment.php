@@ -97,7 +97,7 @@ class Dojo_Payment extends Dojo_Extension {
         return 'ignored';
     }
 
-    public function api_save_source( $is_admin ) {
+    public function api_save_source() {
         $user = wp_get_current_user();
 
         if ( $_POST['user_id'] != $user->ID ) {
@@ -147,7 +147,7 @@ class Dojo_Payment extends Dojo_Extension {
         return $response;
     }
 
-    public function api_delete_source( $is_admin ) {
+    public function api_delete_source() {
         $user = wp_get_current_user();
 
         // validate source
@@ -189,7 +189,7 @@ class Dojo_Payment extends Dojo_Extension {
         return $response;
     }
 
-    public function api_user_execute_payment( $is_admin ) {
+    public function api_user_execute_payment() {
         $invoice = Dojo_Invoice::instance()->model()->get_invoice( $_POST['invoice_id'] );
         $user = wp_get_current_user();
 
@@ -240,7 +240,7 @@ class Dojo_Payment extends Dojo_Extension {
         return 'success';
     }
 
-    public function api_user_execute_event_payment( $is_admin ) {
+    public function api_user_execute_event_payment() {
         // set post context
         $_GLOBAL['post'] = $post = get_post( $_POST['post_id'] );
         if ( ! $post || 'dojo_event' != $post->post_type ) {

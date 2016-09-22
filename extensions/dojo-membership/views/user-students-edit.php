@@ -33,7 +33,7 @@ if ( isset( $this->current_student ) ) {
 <h2>Edit Student</h2>
 <?php endif; ?>
 
-<form id="dojo-membership-student" action="<?= esc_url( $this->ajax( 'save_student' ) ) ?>" method="POST">
+<form id="dojo-membership-student" action="<?php echo esc_url( $this->ajax( 'save_student' ) ) ?>" method="POST">
     <?php if ( ! $new ) : ?>
     <input type="hidden" name="student_id" value="<?php echo esc_attr( $student->ID ) ?>">
     <?php endif; ?>

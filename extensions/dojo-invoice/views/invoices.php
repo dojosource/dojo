@@ -1,4 +1,7 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 $invoices = $this->invoices;
 $invoices_paid = $this->invoices_paid;
 $invoices_not_paid = $this->invoices_not_paid;

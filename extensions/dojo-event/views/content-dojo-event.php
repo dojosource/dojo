@@ -1,4 +1,6 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 $post = $this->post;
 ?>
 

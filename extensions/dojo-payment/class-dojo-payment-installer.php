@@ -3,6 +3,8 @@
  * Payment extension installer
  */
 
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 class Dojo_Payment_Installer extends Dojo_Installer_Base {
     private static $instance;
 
@@ -46,6 +48,18 @@ class Dojo_Payment_Installer extends Dojo_Installer_Base {
             }
         }
     }
+
+    public function uninstall() {
+        parent::uninstall();
+
+        $this->drop_tables( array(
+            $this->customers,
+            $this->sources,
+            $this->charges,
+            $this->events,
+        ) );
+    }
+
 
     public function rev_1() {
         global $wpdb;

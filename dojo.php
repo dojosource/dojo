@@ -5,7 +5,7 @@
  */
 /*
 Plugin Name: Dojo
-Plugin URI: http://dojowordpress.com
+Plugin URI: http://dojosource.com
 Description: Manage and grow your martial arts school with easy to use tools for your students, teachers and you!
 Author: David Mathis 
 Version: 1.0

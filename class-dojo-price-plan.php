@@ -3,6 +3,8 @@
  * Utility class for handling price plan definitions
  */
 
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 class Dojo_Price_Plan extends Dojo_WP_Base {
     private $state;
 

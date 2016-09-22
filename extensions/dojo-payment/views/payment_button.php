@@ -1,3 +1,6 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+?>
 <div class="dojo-stripe-purchase-button"><?php echo esc_html($this->purchase_button_text) ?></div>
 
 <script>

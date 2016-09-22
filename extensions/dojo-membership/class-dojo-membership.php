@@ -69,6 +69,15 @@ class Dojo_Membership extends Dojo_Extension {
     protected function __construct() {
         parent::__construct( 'Membership' );
 
+        // if we are in debug mode check if we need to do date override
+        if ( defined( 'DOJO_DEBUG' ) && DOJO_DEBUG ) {
+            $settings = Dojo_Settings::instance();
+            $date_override = $settings->get( 'membership_debug_date');
+            if ( '' != $date_override ) {
+                self::set_timestamp_override( strtotime( $date_override ) );
+            }
+        }
+
         $this->register_action_handlers( array (
             'dojo_update',
             'dojo_register_settings',
@@ -97,8 +106,15 @@ class Dojo_Membership extends Dojo_Extension {
 
     /**** Ajax Endpoints ****/
 
-    public function api_signup()
-    {
+    public function api_force_update() {
+        $this->require_admin();
+
+        do_action( 'dojo_update' );
+
+        return 'Updates complete';
+    }
+
+    public function api_signup() {
         if ( '1' != $this->get_setting( 'membership_enable_username' ) ) {
             $_POST['username'] = $_POST['email'];
         }
@@ -154,8 +170,7 @@ Phone: '.$_POST['phone']
         }
     }
 
-    public function api_check_coupon()
-    {
+    public function api_check_coupon() {
         $coupon = strtolower( $_POST['coupon'] );
 
         $response = array( 'result' => 'invalid' );
@@ -177,31 +192,25 @@ Phone: '.$_POST['phone']
         echo 'After today\'s payment, automatic payments will begin <strong>' . $this->date( 'm/d/Y', $chargeDate ) . '</strong>.';
     }
 
-    public function api_new_program( $is_admin ) {
-        if ( ! $is_admin ) {
-            die( 'Access Denied' );
-        }
+    public function api_new_program() {
+        $this->require_admin();
 
         $program_id = $this->model()->create_program( $_POST );
 
         wp_redirect( admin_url( 'admin.php?page=dojo-programs' ) );
     }
 
-    public function api_save_program( $is_admin ) {
-        if ( ! $is_admin ) {
-            die( 'Access Denied' );
-        }
-        
+    public function api_save_program() {
+        $this->require_admin();
+
         if ( isset( $_POST['program_id'] ) ) {
             $this->model()->update_program( $_POST['program_id'], $_POST );
         }
         wp_redirect( admin_url( 'admin.php?page=dojo-programs' ) );
     }
 
-    public function api_delete_program( $is_admin ) {
-        if ( ! $is_admin ) {
-            die( 'Access Denied' );
-        }
+    public function api_delete_program() {
+        $this->require_admin();
 
         if ( isset( $_POST['program_id'] ) ) {
             $this->model()->delete_program( $_POST['program_id'] );
@@ -209,20 +218,16 @@ Phone: '.$_POST['phone']
         wp_redirect( admin_url( 'admin.php?page=dojo-programs' ) );
     }
 
-    public function api_new_rank_type( $is_admin ) {
-        if ( ! $is_admin ) {
-            die( 'Access Denied' );
-        }
+    public function api_new_rank_type() {
+        $this->require_admin();
 
         $this->model()->create_rank_type( $_POST );
 
         wp_redirect( admin_url( 'admin.php?page=dojo-ranks' ) );
     }
 
-    public function api_save_rank_type( $is_admin ) {
-        if ( ! $is_admin ) {
-            die( 'Access Denied' );
-        }
+    public function api_save_rank_type() {
+        $this->require_admin();
 
         if ( ! isset( $_POST['rank_type_id'] ) ) {
             $rank_type_id = $this->model()->create_rank_type( $_POST );
@@ -248,10 +253,8 @@ Phone: '.$_POST['phone']
         wp_redirect( admin_url( 'admin.php?page=dojo-ranks' ) );
     }
 
-    public function api_delete_rank_type( $is_admin ) {
-        if ( ! $is_admin ) {
-            die( 'Access Denied' );
-        }
+    public function api_delete_rank_type() {
+        $this->require_admin();
 
         if ( isset( $_POST['rank_type_id'] ) ) {
             $this->model()->delete_rank_type( $_POST['rank_type_id'] );
@@ -259,10 +262,8 @@ Phone: '.$_POST['phone']
         wp_redirect( admin_url( 'admin.php?page=dojo-ranks' ) );
     }
 
-    public function api_save_contract( $is_admin ) {
-        if ( ! $is_admin ) {
-            die( 'Access Denied' );
-        }
+    public function api_save_contract() {
+        $this->require_admin();
 
         $_POST['new_memberships_only']          = 'new' == $_POST['membership_restriction'] ? 1 : 0;
         $_POST['continuing_memberships_only']   = 'continuing' == $_POST['membership_restriction'] ? 1 : 0;
@@ -296,10 +297,8 @@ Phone: '.$_POST['phone']
         wp_redirect( admin_url( 'admin.php?page=dojo-contracts' ) );
     }
 
-    public function api_delete_rank( $is_admin ) {
-        if ( ! $is_admin ) {
-            die( 'Access Denied' );
-        }
+    public function api_delete_rank() {
+        $this->require_admin();
 
         if ( isset( $_POST['rank_id'] ) ) {
             $this->model()->delete_rank( $_POST['rank_id'] );
@@ -307,10 +306,8 @@ Phone: '.$_POST['phone']
         return 'success';
     }
 
-    public function api_delete_contract( $is_admin ) {
-        if ( ! $is_admin ) {
-            return 'Access Denied';
-        }
+    public function api_delete_contract() {
+        $this->require_admin();
 
         if ( isset( $_POST['contract_id'] ) ) {
             $this->model()->delete_contract( $_POST['contract_id'] );
@@ -318,10 +315,8 @@ Phone: '.$_POST['phone']
         wp_redirect( admin_url( 'admin.php?page=dojo-contracts' ) );
     }
 
-    public function api_save_document( $is_admin ) {
-        if ( ! $is_admin ) {
-            return 'Access Denied';
-        }
+    public function api_save_document() {
+        $this->require_admin();
 
         if ( empty( $_POST ) ) {
             $error = 'Error saving document, please check the size of file you are trying to upload';
@@ -386,10 +381,8 @@ Phone: '.$_POST['phone']
         wp_redirect( admin_url( 'admin.php?page=dojo-documents' ) );
     }
 
-    public function api_delete_document( $is_admin ) {
-        if ( ! $is_admin ) {
-            return 'Access Denied';
-        }
+    public function api_delete_document() {
+        $this->require_admin();
 
         if ( isset( $_POST['document_id'] ) ) {
             $doc = $this->model()->get_document( $_POST['document_id'] );
@@ -407,6 +400,11 @@ Phone: '.$_POST['phone']
 
     public function api_save_student( $is_admin ) {
         $user = wp_get_current_user();
+
+        if ( $is_admin ) {
+            // make sure user has access to be acting as admin
+            $this->require_admin();
+        }
 
         if ( isset( $_POST['student_id'] ) ) {
             if ( $is_admin || $this->model()->is_user_student( $user->ID, $_POST['student_id'] ) ) {
@@ -431,10 +429,11 @@ Phone: '.$_POST['phone']
         }
     }
 
-    public function api_delete_student( $is_admin ) {
+    public function api_delete_student() {
         $user = wp_get_current_user();
 
         if ( isset( $_POST['student_id'] ) ) {
+            // if student does belong to this user
             if ( $this->model()->is_user_student( $user->ID, $_POST['student_id'] ) ) {
                 $this->model()->delete_student( $_POST['student_id'] );
             } else {
@@ -448,7 +447,7 @@ Phone: '.$_POST['phone']
     /**
      * Called every time the drop down select changes on a student to save state and update line items
      */
-    public function api_save_enrollment( $is_admin ) {
+    public function api_save_enrollment() {
         $user = wp_get_current_user();
 
         if ( ! isset( $_POST['refresh_only'] ) ) {
@@ -473,7 +472,7 @@ Phone: '.$_POST['phone']
                         $this->model()->update_student( $student_id, array( 'current_membership_id' => $membership->ID ) );
 
                         // if membership not submitted yet
-                        if ( self::MEMBERSHIP_NA == $membership->status || self::MEMBERSHIP_PENDING == $membership->status ) {
+                        if ( ! $this->is_status_submitted( $membership->status ) ) {
 
                             // set/change the contract id
                             $this->model()->update_membership( $membership->ID, array( 'contract_id' => $contract_id ) );
@@ -491,7 +490,7 @@ Phone: '.$_POST['phone']
     /**
      * Called to start enrollment process. Will move student memberships with selected contracts to pending state.
      */
-    public function api_enrollment_start( $is_admin ) {
+    public function api_enrollment_start() {
         $user = wp_get_current_user();
 
         // apply membership selection
@@ -542,7 +541,7 @@ Phone: '.$_POST['phone']
     /**
      * Called to submit enrollment. Will move student memberships from pending to submitted state.
      */
-    public function api_submit_application( $is_admin ) {
+    public function api_submit_application() {
         $user = wp_get_current_user();
 
         $students = array();
@@ -598,6 +597,7 @@ Membership: ' . $student->contract->title . '
 
 ';
             }
+            $this->log_event( $message );
             wp_mail( $adminEmail, 'New Member Application '.$this->time(), $message );
         } catch ( Exception $ex ) {
             debug( 'Error sending email ' . $ex->getMessage() );
@@ -608,7 +608,7 @@ Membership: ' . $student->contract->title . '
         wp_redirect( $url );
     }
 
-    public function api_cancel_membership( $is_admin ) {
+    public function api_cancel_membership() {
         $user = wp_get_current_user();
 
         $membership = $this->model()->get_membership( $_POST['membership_id'] );
@@ -640,26 +640,29 @@ Membership: ' . $student->contract->title . '
             'status'                => self::MEMBERSHIP_CANCELED,
         ));
 
+        $this->log_event( 'Membership canceled for ' . $this->student_name( $student ) );
+
         do_action( 'dojo_membership_cancel_requested', $membership->ID );
 
         return 'success';
     }
 
-    public function api_record_payment_received( $is_admin ) {
-        if ( ! $is_admin ) {
-            return 'Access denied';
-        }
+    public function api_record_payment_received() {
+        $this->require_admin();
+
         $membership = $this->model()->get_student_membership( $_POST['student'] );
 
         $this->apply_membership_payment( $membership->ID, 1 );
 
+        $student = $this->model()->get_student( $membership->student_id );
+        $this->log_event( 'Admin month payment recorded for ' . $this->student_name( $student ) );
+
         return 'success';
     }
 
-    public function api_approve_application( $is_admin ) {
-        if ( ! $is_admin ) {
-            return 'Access denied';
-        }
+    public function api_approve_application() {
+        $this->require_admin();
+
         $membership = $this->model()->get_student_membership( $_POST['student'] );
 
         if ( self::MEMBERSHIP_PAID != $membership->status ) {
@@ -687,13 +690,17 @@ Membership: ' . $student->contract->title . '
             ) );
         }
 
+        $this->log_event( 'Membership application approved for ' . $this->student_name( $student ) );
+
         return 'success';
     }
 
-    public function api_save_billing_options( $is_admin ) {
+    public function api_save_billing_options() {
         $user = wp_get_current_user();
 
         $this->set_user_billing_day( $user->ID, (int) $_POST['billing_day'] );
+
+        $this->log_event( 'Billing options updated for account ' . $user->user_login );
 
         do_action( 'dojo_membership_save_user_billing_options', $user );
 
@@ -705,6 +712,16 @@ Membership: ' . $student->contract->title . '
 
 
     public function handle_dojo_register_settings( $settings ) {
+        if ( defined( 'DOJO_DEBUG' ) && DOJO_DEBUG ) {
+            $settings->register_section(
+                'dojo_member_debug_section',    // section id
+                'Debug',                        // section title
+                '<a href="javascript:jQuery.post(\'' . $this->ajax( 'force_update' ) . '\', {});">Force Update</a>'
+            );
+
+            $settings->register_option( 'dojo_member_debug_section', 'membership_debug_date', 'Override Current Date', $this );
+        }
+
         $settings->register_section(
             'dojo_member_signup_section',   // section id
             'Member Sign Up',               // section title
@@ -728,16 +745,17 @@ Membership: ' . $student->contract->title . '
     
     public function handle_dojo_register_menus( $menus ) {
         $menus->add_menu( 'Students', $this );
-        $menus->add_menu( 'Ranks', $this );
         $menus->add_menu( 'Programs', $this );
         $menus->add_menu( 'Contracts', $this );
         $menus->add_menu( 'Documents', $this );
+        $menus->add_menu( 'Ranks', $this );
     }
 
     public function handle_dojo_add_dashboard_blocks( $dashboard ) {
         // set up state for views rendered from render_dashboard_block
         $this->submitted_memberships = $this->model()->get_memberships( array( self::MEMBERSHIP_SUBMITTED ), true );
         $this->paid_memberships = $this->model()->get_memberships( array( self::MEMBERSHIP_PAID ), true );
+        $this->due_memberships = $this->model()->get_memberships( array( self::MEMBERSHIP_DUE, self::MEMBERSHIP_CANCELED_DUE ), true );
 
         $dashboard->add_dashboard_block( 'membership-alerts', Dojo_Menu::DASHBOARD_TOP, $this );
     }
@@ -749,6 +767,11 @@ Membership: ' . $student->contract->title . '
             if ( isset( $meta['is_membership_payment'] ) && $meta['is_membership_payment'] ) {
                 // apply one month of membership payment
                 $this->apply_membership_payment( $line_item->membership_id, 1 );
+
+                // log event
+                $membership = $this->model()->get_membership( $line_item->membership_id );
+                $student = $this->model()->get_student( $membership->student_id );
+                $this->log_event( 'Invoice payment applied to one month of membership for ' . $this->student_name( $student ) );
             }
         }
     }
@@ -778,6 +801,7 @@ Membership: ' . $student->contract->title . '
                 $this->model()->update_user_account( $user_id, array(
                     'last_upcoming_payment_event'   => $this->time( 'mysql' )
                 ) );
+                $this->log_event( 'Upcoming payment due', $user_id );
                 do_action( 'dojo_membership_upcoming_payment_due', $memberships_due[ $user_id ] );
             } elseif ( strtotime( $account->last_payment_event ) < $month_start and $day >= $account->billing_day ) {
                 // if updates didn't run so these run back to back the elseif will at least separate them by
@@ -800,6 +824,7 @@ Membership: ' . $student->contract->title . '
                 $this->model()->update_user_account( $user_id, array(
                     'last_payment_event'   => $this->time( 'mysql' )
                 ) );
+                $this->log_event( 'Payment due', $user_id );
                 do_action( 'dojo_membership_payment_due', $memberships_due[ $user_id ] );
             }
         }
@@ -810,6 +835,8 @@ Membership: ' . $student->contract->title . '
             $this->model()->update_membership( $cancellation->membership_id, array(
                 'status'    => self::MEMBERSHIP_ENDED,
             ) );
+            $this->model()->update_student( $cancellation->student_id, array( 'current_membership_id' => NULL ) );
+            $this->log_event( 'Membership ended for ' . $this->student_name( $cancellation ), $cancellation->user_id );
             do_action( 'dojo_membership_ended', $cancellation->membership_id );
         }
 
@@ -819,6 +846,8 @@ Membership: ' . $student->contract->title . '
              $this->model()->update_membership( $membership->membership_id, array(
                 'status'    => self::MEMBERSHIP_ENDED,
             ) );
+            $this->model()->update_student( $membership->student_id, array( 'current_membership_id' => NULL ) );
+            $this->log_event( 'Membership ended for ' . $this->student_name( $membership ), $membership->user_id );
             do_action( 'dojo_membership_ended', $membership->membership_id );
         }
 
@@ -850,13 +879,15 @@ Membership: ' . $student->contract->title . '
         $this->render_option_regular_text( 'membership_slug', 'All membership pages are under ' . esc_html( $this->membership_url( '' ) ) );
     }
 
+    public function render_option_membership_debug_date() {
+        $this->render_option_regular_text( 'membership_debug_date', 'Set this to simulate time passing on contracts' );
+    }
+
 
     /**** Render Menus ****/
 
     public function render_menu_ranks() {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( 'Access denied' );
-        }
+        $this->require_admin();
 
         // instantiate programs table
         $this->rank_types_table = new Dojo_Rank_Types_Table( $this->model() );
@@ -886,9 +917,7 @@ Membership: ' . $student->contract->title . '
     }
 
     public function render_menu_programs() {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( 'Access denied' );
-        }
+        $this->require_admin();
 
         // instantiate programs table
         $this->programs_table = new Dojo_Programs_Table( $this->model() );
@@ -918,9 +947,7 @@ Membership: ' . $student->contract->title . '
     }
 
     public function render_menu_contracts() {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( 'Access denied' );
-        }
+        $this->require_admin();
 
         // instantiate contracts table
         $this->contracts_table = new Dojo_Contracts_Table( $this->model() );
@@ -970,9 +997,7 @@ Membership: ' . $student->contract->title . '
     }
 
     public function render_menu_documents() {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( 'Access denied' );
-        }
+        $this->require_admin();
 
         // instantiate contracts table
         $this->documents_table = new Dojo_Documents_Table( $this->model() );
@@ -1001,9 +1026,7 @@ Membership: ' . $student->contract->title . '
     }
 
     public function render_menu_students() {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( 'Access denied' );
-        }
+        $this->require_admin();
 
         // instantiate students table
         $this->students_table = new Dojo_Students_Table( $this->model() );
@@ -1143,7 +1166,7 @@ Membership: ' . $student->contract->title . '
                 foreach ( $this->students as $student ) {
                     $membership = $this->model()->get_student_membership( $student->ID );
                     $student->membership = $membership;
-                    if ( self::MEMBERSHIP_NA == $membership->status || self::MEMBERSHIP_PENDING == $membership->status ) {
+                    if ( ! $this->is_status_submitted( $membership->status ) ) {
                         $this->unenrolled_students[] = $student;
                     }
                 }
@@ -1215,11 +1238,11 @@ Membership: ' . $student->contract->title . '
                 break;
 
             case '/enroll' :
-                $title = 'Membership Enrollment';
+                $title = 'Member Enrollment';
                 break;
 
             case '/enroll/apply' :
-                $title = 'Membership Application';
+                $title = 'Member Application';
                 break;
 
             case '/enroll/details' :
@@ -1240,7 +1263,7 @@ Membership: ' . $student->contract->title . '
                 break;
 
             default:
-                $title = 'Membership';
+                $title = 'Members';
         }
 
         return apply_filters( 'dojo_membership_page_title', $title, $path );
@@ -1347,7 +1370,7 @@ Membership: ' . $student->contract->title . '
         $settings = Dojo_Settings::instance();
         $slug = $settings->get( 'membership_slug' );
         if ( '' == $slug ) {
-            $slug = 'membership';
+            $slug = 'members';
         }
         $this->register_custom_pages( array (
             'membership' => $slug,
@@ -1364,7 +1387,7 @@ Membership: ' . $student->contract->title . '
     public function membership_url( $path ) {
         $slug = Dojo_Settings::instance()->get( 'membership_slug' );
         if ( '' == $slug ) {
-            $slug = 'membership';
+            $slug = 'members';
         }
         return site_url( $slug . '/' . $path );
     }
@@ -1454,7 +1477,8 @@ Membership: ' . $student->contract->title . '
     public function is_status_submitted( $status ) {
         return
             self::MEMBERSHIP_NA         != $status &&
-            self::MEMBERSHIP_PENDING    != $status
+            self::MEMBERSHIP_PENDING    != $status &&
+            self::MEMBERSHIP_ENDED      != $status
             ;
     }
 

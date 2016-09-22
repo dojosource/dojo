@@ -119,6 +119,15 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             }
         }
     }
+
+    public function uninstall() {
+         foreach ( $this->extensions as $extension_class ) {
+            $installer_class = $extension_class . '_Installer';
+            if ( class_exists( $installer_class ) ) {
+                $this->get_instance( $installer_class )->uninstall();
+            }
+        }
+    }
 }
 
 

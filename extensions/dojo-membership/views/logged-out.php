@@ -1,3 +1,7 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+?>
+
 <?php echo $settings->get( 'membership_signup_header' ) ?>
 <p>
 Already have an account? <a href="<?php echo wp_login_url( get_permalink() ); ?>" title="Log In">Log in here</a>.
@@ -64,7 +68,7 @@ jQuery(function($) {
         $('.dojo-submit-button').hide();
         $('.dojo-please-wait').show();
 
-        $.post('<?= $this->ajax( 'signup' ) ?>', data, function(response) {
+        $.post('<?php echo $this->ajax( 'signup' ) ?>', data, function(response) {
             if (response != 'success') {
                 $('.dojo-error').html(response);
                 $('.dojo-error').show();

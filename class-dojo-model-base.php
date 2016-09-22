@@ -3,6 +3,8 @@
  * Base class for model classes.
  */
 
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 class Dojo_Model_Base extends Dojo_WP_Base {
     
     /**

@@ -59,6 +59,24 @@ class Dojo_Installer extends Dojo_Installer_Base {
         wp_clear_scheduled_hook( 'dojo_update' );
     }
 
+    public function uninstall() {
+        global $wpdb;
+
+        parent::uninstall();
+
+        // drop tables
+        $this->drop_tables( array(
+            $this->event_log,
+        ) );
+
+        // remove dummy page
+        wp_trash_post( get_option( 'dojo_dummy_page' ) );
+        $wpdb->query( "DELETE FROM $wpdb->options WHERE option_name = dojo_dummy_page" );
+
+        // remove plugin options
+        $wpdb->query( "DELETE FROM $wpdb->options WHERE option_name = dojo_options" );
+    }
+
     public function rev_1() {
         global $wpdb;
 

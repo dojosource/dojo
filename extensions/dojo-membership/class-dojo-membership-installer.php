@@ -3,6 +3,8 @@
  * Membership extension installer
  */
 
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 class Dojo_Membership_Installer extends Dojo_Installer_Base {
     private static $instance;
 
@@ -84,6 +86,36 @@ class Dojo_Membership_Installer extends Dojo_Installer_Base {
 
         // flush rewrite rules to pick up membership url slug
         $wp_rewrite->flush_rules( false );
+    }
+
+    public function deactivate() {
+        global $wp_rewrite;
+
+        parent::deactivate();
+
+        // flush rewrite rules to clear membership url slug
+        $wp_rewrite->flush_rules( false );
+    }
+
+    public function uninstall() {
+        parent::uninstall();
+
+        $this->drop_tables( array(
+            $this->notifications,
+            $this->accounts,
+            $this->students,
+            $this->memberships,
+            $this->membership_alerts,
+            $this->rank_types,
+            $this->ranks,
+            $this->student_ranks,
+            $this->programs,
+            $this->contracts,
+            $this->contract_programs,
+            $this->documents,
+            $this->contract_documents,
+            $this->membership_contract_documents,
+        ) );
     }
 
     public function rev_1() {

@@ -3,6 +3,8 @@
  * Invoice extension installer
  */
 
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 class Dojo_Invoice_Installer extends Dojo_Installer_Base {
     private static $instance;
 
@@ -45,6 +47,17 @@ class Dojo_Invoice_Installer extends Dojo_Installer_Base {
                 $this->set_rev( 0 );
             }
         }
+    }
+
+    public function uninstall() {
+        parent::uninstall();
+
+        $this->drop_tables( array(
+            $this->invoices,
+            $this->charges,
+            $this->invoice_charges,
+            $this->payments,
+        ) );
     }
 
     public function rev_1() {

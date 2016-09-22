@@ -13,7 +13,7 @@ $student = $this->current_student;
 
 <h2>Are you sure you want to delete this student?</h2>
 
-<form id="dojo-delete-student" action="<?= esc_url( $this->ajax( 'delete_student' ) ) ?>" method="POST">
+<form id="dojo-delete-student" action="<?php echo esc_url( $this->ajax( 'delete_student' ) ) ?>" method="POST">
     <input type="hidden" name="student_id" value="<?php echo esc_attr( $student->ID ) ?>">
     <div class="dojo-membership-student-block">
         <h3 style="width:80%;float:left;">

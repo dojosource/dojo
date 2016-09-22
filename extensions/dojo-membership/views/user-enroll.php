@@ -29,7 +29,7 @@ $checkout_table = new Dojo_Checkout_Table( $line_items, array( 'render_simple_to
                 <div class="dojo-clear-space"></div>
             </div>
 
-            <form id="dojo-enroll" action="<?= esc_url( $this->ajax( 'enrollment_start' ) ) ?>" method="POST">
+            <form id="dojo-enroll" action="<?php echo esc_url( $this->ajax( 'enrollment_start' ) ) ?>" method="POST">
                 <?php foreach ( $unenrolled_students as $student ) : ?>
                 <div>
                     <label><?php echo esc_html( $student->first_name . ' ' . $student->last_name ) ?></label>

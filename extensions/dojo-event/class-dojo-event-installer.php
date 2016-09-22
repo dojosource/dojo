@@ -40,6 +40,14 @@ class Dojo_Event_Installer extends Dojo_Installer_Base {
         }
     }
 
+    public function uninstall() {
+        parent::uninstall();
+
+        $this->drop_tables( array(
+            $this->registrants,
+        ) );
+    }
+
     public function rev_1() {
         global $wpdb;
 

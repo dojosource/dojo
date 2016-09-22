@@ -1,4 +1,7 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 $unpaid_invoices = $this->unpaid_invoices;
 $student = $this->current_student;
 
@@ -18,7 +21,7 @@ wp_enqueue_style( 'dojo-invoice', $this->url( 'css/dojo-invoice.css' ) );
 jQuery(function($) {
     $('.dojo-approve-membership').click(function() {
         var data = {
-           'membership_id': '<?php echo $student->current_membership_id ?>'
+           'student': '<?php echo $student->ID ?>'
         }
         $.post('<?php echo $this->ajax( 'approve_application' ) ?>', data, function(response) {
             if (response == 'success') {

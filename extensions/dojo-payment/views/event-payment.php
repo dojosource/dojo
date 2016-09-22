@@ -1,4 +1,7 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 $sources = $this->sources;
 $user = $this->current_user;
 $customer = $this->current_customer;

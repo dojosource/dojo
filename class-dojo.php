@@ -47,6 +47,7 @@ final class Dojo extends Dojo_WP_Base {
             'body_class',
             'query_vars',
             'posts_results',
+            array( 'plugin_action_links', 10, 2 ),
             array( 'wp_head', 0xFFFF ),
         ) );
 
@@ -171,6 +172,14 @@ final class Dojo extends Dojo_WP_Base {
         return get_post( $page_id );
     }
 
+    /**
+     * Initiates a full uninstall of the plugin and every extension.
+     */
+    public function uninstall() {
+        Dojo_Extension_Manager::instance()->uninstall();
+        Dojo_Installer::instance()->uninstall();
+    }
+
 
     /**** Action Handlers ****/
 
@@ -262,6 +271,13 @@ final class Dojo extends Dojo_WP_Base {
 
 
     /**** Filters ****/
+
+    public function filter_plugin_action_links( $links, $file ) {
+        if ( $file == plugin_basename( dirname( __FILE__ ) . '/dojo.php') ) {
+            $links[] = '<a href="' . admin_url('admin.php?page=dojo-settings') . '">Settings</a>';
+        }
+        return $links;
+    }
 
     public function filter_body_class( $classes ) {
         $classes[] = 'dojo';

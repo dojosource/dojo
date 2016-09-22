@@ -1,4 +1,7 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 $is_new = $this->is_new;
 $ready_to_enroll = $this->ready_to_enroll;
 $students = $this->students;

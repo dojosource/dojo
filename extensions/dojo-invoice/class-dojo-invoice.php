@@ -184,6 +184,8 @@ class Dojo_Invoice extends Dojo_Extension {
     /**** Ajax Handlers ****/
 
     public function api_admin_apply_payment( $is_admin ) {
+        $this->require_admin();
+
         if ( ! $is_admin ) {
             return 'Access denied';
         }
@@ -205,21 +207,14 @@ class Dojo_Invoice extends Dojo_Extension {
     }
 
     /**
-     * TODO - this should be handled by membership extension
+     * Handles ajax call to approve membership from student admin screen
      *
      * @param $is_admin
      * @return string
      */
     public function api_approve_application( $is_admin ) {
-        if ( ! $is_admin ) {
-            return 'Access denied';
-        }
-
-        Dojo_Membership::instance()->model()->update_membership( $_POST['membership_id'], array(
-            'status' => Dojo_Membership::MEMBERSHIP_ACTIVE,
-        ) );
-
-        return 'success';
+        // pass on to membership extension to handle
+        return Dojo_Membership::instance()->api_approve_application( $is_admin );
     }
 
 

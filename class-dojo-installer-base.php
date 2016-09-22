@@ -5,6 +5,8 @@
  * Derived classes should implement revision methods rev_1, rev_2... etc starting with 1 and incrementing by 1.
  */
 
+if ( ! defined( 'ABSPATH' ) ) { die(); }
+
 class Dojo_Installer_Base extends Dojo_WP_Base {
     private $installer_name;
 
@@ -44,6 +46,17 @@ class Dojo_Installer_Base extends Dojo_WP_Base {
      * @return void
      */
     public function deactivate() {
+    }
+
+    /**
+     * Called when the plugin is being uninstalled.
+     * Override to do full cleanup including removing tables.
+     */
+    public function uninstall() {
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_name = %s", $this->installer_name );
+        $wpdb->query( $sql );
     }
 
     /**
@@ -107,6 +120,21 @@ class Dojo_Installer_Base extends Dojo_WP_Base {
 
         $sql = $wpdb->prepare( 'SHOW TABLES LIKE %s', $table );
         return null !== $wpdb->get_row( $sql ); 
+    }
+
+    /**
+     * Utility function to drop a set of tables in the database
+     *
+     * @param $tables
+     *
+     * @erturn void
+     */
+    public function drop_tables( $tables ) {
+        global $wpdb;
+
+        foreach ( $tables as $table ) {
+            $wpdb->query( "DROP TABLE IF EXISTS $table" );
+        }
     }
 }
 

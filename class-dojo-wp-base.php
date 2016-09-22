@@ -9,6 +9,24 @@ class Dojo_WP_Base {
     private static $override_timestamp = NULL;
 
     /**
+     * Checks that current user has manage_options access and if not aborts with Access denied.
+     */
+    public function require_admin() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            die( 'Access denied.' );
+        }
+    }
+
+    /**
+     * Checks if current user has manage_options access. Not the same as global function is_admin()
+     *
+     * @return bool
+     */
+    public function is_admin() {
+        return current_user_can( 'manage_options' );
+    }
+
+    /**
      * Used for testing purposes to override current time. The plugin uses the base
      * class date and time functions rather than the php versions directly.
      *

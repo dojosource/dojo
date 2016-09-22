@@ -228,7 +228,9 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
     public function get_student_membership( $student_id ) {
         global $wpdb;
 
-        $sql = $wpdb->prepare( "SELECT * FROM $this->memberships WHERE student_id = %d", $student_id );
+        $sql = $wpdb->prepare( "SELECT m.* FROM $this->memberships m
+            INNER JOIN $this->students s on m.ID = s.current_membership_id
+            WHERE s.ID = %d", $student_id );
         $record = $wpdb->get_row( $sql );
 
         if ( null === $record ) {
@@ -1045,7 +1047,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
     public function get_student( $student_id ) {
         global $wpdb;
 
-        $sql = $wpdb->prepare( "SELECT s.*, m.status, m.contract_id FROM $this->students s
+        $sql = $wpdb->prepare( "SELECT s.*, m.status, m.next_due_date, m.contract_id FROM $this->students s
             LEFT JOIN $this->memberships m ON s.current_membership_id = m.ID
             WHERE s.ID = %d AND s.deleted_date IS NULL", $student_id );
         return $wpdb->get_row( $sql );

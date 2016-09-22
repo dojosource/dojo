@@ -294,7 +294,7 @@ class Dojo_Event extends Dojo_Extension {
         $this->registrants = $this->model()->get_event_registrants( $this->post->ID );
         $this->user_registrants = $this->model()->get_event_user_registrants( $this->post->ID, $user->ID );
 
-        if ( current_user_can( 'manage_options' ) ) {
+        if ( $this->is_admin() ) {
             $this->is_manager = true;
         } else {
             $this->is_manager = false;
@@ -360,7 +360,7 @@ class Dojo_Event extends Dojo_Extension {
 
     /**** Ajax Handlers ****/
 
-    public function api_get_line_items( $is_admin ) {
+    public function api_get_line_items() {
         // set post context
         $GLOBALS['post'] = get_post( $_POST['post_id'] );
 
@@ -390,7 +390,7 @@ class Dojo_Event extends Dojo_Extension {
         return $line_items;
     }
 
-    public function api_register( $is_admin ) {
+    public function api_register() {
         // set post context
         $GLOBALS['post'] = get_post( $_POST['post_id'] );
 
