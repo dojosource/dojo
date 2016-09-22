@@ -33,8 +33,10 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
                 }
                 $class .= ucfirst( $part );
             }
-
             $this->extensions[ $class ] = $class;
+
+            // tell auto loader about this extension class
+            Dojo_Loader::add_extension( $class );
 
             // if this is a core extension or enabled extension add it to the active extension list
             if ( isset( $this->core_extensions[ $class ] ) || $settings->get( 'enable_extension_' . $class ) ) {

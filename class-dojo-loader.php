@@ -27,16 +27,17 @@ class Dojo_Loader {
         // loader is in the root path of the plugin
         self::$plugin_path = dirname( __FILE__ );
         
-        // todo - use settings to only add activated extensions
-        $this->add_extension( 'Dojo_Membership' );
-        $this->add_extension( 'Dojo_Event' );
-        $this->add_extension( 'Dojo_Payment' );
-        $this->add_extension( 'Dojo_Invoice' );
-
         spl_autoload_register( array( $this, 'autoload' ) );
     }
 
-    private function add_extension( $class ) {
+    /**
+     * Called by the extension manager to add extensions to loader
+     *
+     * @param $class
+     *
+     * @return void
+     */
+    public static function add_extension( $class ) {
         $path = '/extensions/' . str_replace( '_', '-', strtolower( $class )) . '/';
 
         self::$class_paths[ $class ]                = $path;
@@ -85,7 +86,7 @@ class Dojo_Loader {
                 require_once $path;
             }
         } else {
-            // default to root directory but only if class prefix is correct 
+            // default to root directory but only if class prefix is correct
             if ( 0 === strpos( $path_format, 'dojo-' ) ) {
                 $path = self::$plugin_path . '/class-' . $path_format . '.php';
                 if ( file_exists( $path ) ) {
