@@ -191,6 +191,9 @@ final class Dojo extends Dojo_WP_Base {
     }
 
     public static function handle_deactivate() {
+        // clear out custom pages so permalinks will get cleared properly
+        self::instance()->custom_pages = array();
+
         Dojo_Installer::instance()->deactivate();
         Dojo_Extension_Manager::instance()->handle_deactivate();
 
