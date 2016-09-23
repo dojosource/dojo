@@ -266,7 +266,7 @@ final class Dojo extends Dojo_WP_Base {
         $settings->register_section(
             'dojo_extension_section',                       // section id
             'Add-Ons',                                      // section title
-            'For more add-ons <a href="#">click here</a>'   // section subtitle
+            'For more add-ons visit <a target="_blank" href="https://dojosource.com">dojosource.com</a>'   // section subtitle
         );
 
         $settings->register_option( 'dojo_extension_section', 'enable_extensions', 'Enable Add-Ons', $this );
