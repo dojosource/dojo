@@ -17,9 +17,11 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         $settings = Dojo_Settings::instance();
 
         // core list of extensions will always be enabled
-        $this->core_extensions = array(
-            'Dojo_Membership' => 'Dojo_Membership'
-        );
+        if ( ! defined( 'DOJO_NO_CORE' ) || ! DOJO_NO_CORE ) {
+            $this->core_extensions = array(
+                'Dojo_Membership' => 'Dojo_Membership',
+            );
+        }
 
         // sort out extensions
         $dirs = glob( plugin_dir_path( __FILE__ ) . 'dojo-*', GLOB_ONLYDIR );
