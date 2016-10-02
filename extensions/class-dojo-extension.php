@@ -7,9 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) { die(); }
 
 class Dojo_Extension extends Dojo_WP_base {
     private $title;
+    private $version;
 
-    protected function __construct( $title ) {
+    protected function __construct( $title, $version = '' ) {
         $this->title = $title;
+        $this->version = $version;
     }
     
     /**
@@ -19,6 +21,15 @@ class Dojo_Extension extends Dojo_WP_base {
      */
     public function title() {
         return $this->title;
+    }
+
+    /**
+     * Get version of extension
+     *
+     * @return string
+     */
+    public function version() {
+        return $this->version;
     }
 
     /**
@@ -89,20 +100,6 @@ class Dojo_Extension extends Dojo_WP_base {
     }
 
 
-    /**
-     * Gets ajax url for routing a call to the given method on this object.
-     * The given method name will be prefixed with api_ when the callback is routed.
-     *
-     * @param string $method Name of method to call without api_ prefix.
-     *
-     * @return string
-     */
-    protected function ajax( $method ) {
-        // get class name without Dojo_ prefix
-        $target = substr( get_class( $this ), 5 );
-        
-        return admin_url( 'admin-ajax.php' ) . '?action=dojo&target=' . urlencode( $target ) . '&method=' . urlencode( $method );
-    }
 
     /**
      * Registers custom pages for this extension. Pages passed in as name => slug pairs where name is the name of
@@ -175,7 +172,7 @@ class Dojo_Extension extends Dojo_WP_base {
         <?php if ( '' != $label ) : ?>
             <?php echo $label ?><br />
         <?php endif; ?>
-        <input type="text" id="<?php echo esc_attr( $id ) ?>" name="dojo_options[<?php echo esc_attr( $id ) ?>]" class="regular-text" value="<?php echo $this->get_setting( $id ) ?>" />
+        <input type="text" id="<?php echo esc_attr( $id ) ?>" name="dojo_options[<?php echo esc_attr( $id ) ?>]" class="regular-text" value="<?php echo esc_attr( $this->get_setting( $id ) ) ?>" />
         <?php
     }
 }

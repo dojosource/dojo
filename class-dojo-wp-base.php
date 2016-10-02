@@ -27,6 +27,27 @@ class Dojo_WP_Base {
     }
 
     /**
+     * Gets ajax url for routing a call to the given method on this object.
+     * The given method name will be prefixed with api_ when the callback is routed.
+     *
+     * @param string $method Name of method to call without api_ prefix.
+     *
+     * @return string
+     */
+    public function ajax( $method ) {
+        // get class name without Dojo_ prefix
+        $target = substr( get_class( $this ), 5 );
+
+        $url = admin_url( 'admin-ajax.php' ) . '?action=dojo&method=' . urlencode( $method );
+
+        // empty target resolves to root class Dojo
+        if ( '' != $target ) {
+            $url .= '&target=' . urlencode( $target );
+        }
+        return $url;
+    }
+
+    /**
      * Used for testing purposes to override current time. The plugin uses the base
      * class date and time functions rather than the php versions directly.
      *

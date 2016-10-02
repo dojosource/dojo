@@ -132,6 +132,70 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             }
         }
     }
+
+    public function check_for_updates() {
+
+    }
+
+    private function call_dojosource( $method, $params = array() ) {
+        $settings = Dojo_Settings::instance();
+
+        // include an unmodified $wp_version
+        include( ABSPATH . WPINC . '/version.php' );
+
+        $url = $http_url = 'http://dojosource.com/wp-admin/admin-ajax.php?action=dojo&target=Server&method=' . urlencode( $method );
+        if ( $ssl = wp_http_supports( array( 'ssl' ) ) ) {
+            $url = set_url_scheme( $url, 'https' );
+        }
+
+        $parts = wp_parse_url( site_url() );
+        $post_body = array(
+            'domain'    => $parts['host'],
+            'key'       => $settings->get( 'site_key' ),
+        );
+        $post_body = array_merge( $post_body, $params );
+
+        $options = array(
+            'timeout'       => ( ( defined('DOING_CRON') && DOING_CRON ) ? 30 : 3 ),
+            'user-agent'    => 'WordPress/' . $wp_version . '; ' . home_url( '/' ),
+            'body'          => $post_body,
+        );
+
+        $response = wp_remote_post( $url, $options );
+        if ( $ssl && is_wp_error( $response ) ) {
+            $this->debug( 'Error making secure connection to host' );
+            $response = wp_remote_post( $http_url, $options );
+        }
+
+        if ( is_wp_error( $response ) || 200 != wp_remote_retrieve_response_code( $response ) ) {
+            return new WP_Error( 'connect', 'Error connecting to Dojo Source' );
+        }
+
+        $body = $original_body = trim( wp_remote_retrieve_body( $response ) );
+        $body = json_decode( $body, true );
+
+        if ( ! is_array( $body ) || ! isset( $body['v'] ) ) {
+            return new WP_Error( 'response', 'Dojo Source says ' . $original_body );
+        }
+
+        return $body;
+    }
+
+
+    /**** Ajax Handlers ****/
+
+    public function api_get_management_view() {
+        $response = $this->call_dojosource( 'get_extension_info' );
+
+        if ( $response instanceof WP_Error ) {
+            return '<div class="dojo-danger">Error: ' . esc_html( $response->get_error_message() ) . '</div>';
+        }
+
+        $this->extension_info = $response;
+        ob_start();
+        include 'views/manage-extensions.php';
+        return ob_get_clean();
+    }
 }
 
 

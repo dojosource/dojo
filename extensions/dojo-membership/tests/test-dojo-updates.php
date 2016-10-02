@@ -114,6 +114,8 @@ class Test_Dojo_Updates extends WP_UnitTestCase {
         // should only trigger upcoming payment due
         Dojo_WP_Base::set_timestamp_override( strtotime( '2/9/2016' ) );
 
+        // Do two updates since we wouldn't see payment due until after an upcoming payment due triggered
+        do_action( 'dojo_update' );
         do_action( 'dojo_update' );
         $this->assertTrue( isset( $stub->handled_events['dojo_membership_upcoming_payment_due'] ) );
         $this->assertTrue( ! isset( $stub->handled_events['dojo_membership_payment_due'] ) );
