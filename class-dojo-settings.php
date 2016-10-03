@@ -54,7 +54,7 @@ class Dojo_Settings {
      */
     public function set( $option_id, $value ) {
         $this->options[ $option_id ] = $value;
-        set_option( 'dojo_options', $this->options );
+        update_option( 'dojo_options', $this->options );
     }
 
     /**
