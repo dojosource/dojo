@@ -65,7 +65,11 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
     </div>
     <div class="dojo-right">
         <div class="dojo-extension-version">
-            <?php echo esc_html( $extension->version() ) ?>
+            v<?php echo esc_html( $extension->version() ) ?>
+        </div>
+        <div style="text-align:right;margin-bottom:5px;">
+            <a href="javascript:;" class="dojo-remove dojo-red-link">Remove</a>
+            <div style="display:none;">Removing... <img src="/wp-admin/images/spinner.gif"></div>
         </div>
         <?php if ( $info['versions'][ $extension_id ] != $extension->version() ) : ?>
         <div>
@@ -106,13 +110,13 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 <script>
 jQuery(function($) {
 
-    $('.dojo-install,.dojo-update').click(function() {
-        var btn = $(this);
+    function doAction(action, context) {
+        var btn = context;
         btn.hide();
         btn.next().show();
         $('.dojo-error-container').hide();
         var extension = $(this).closest('.dojo-extension-block').attr('data-extension');
-        $.post('<?php echo $this->ajax( 'install_extension' ) ?>', { extension: extension }, function(response) {
+        $.post('<?php echo $this->ajax( action ) ?>', { extension: extension }, function(response) {
             if (response == 'success') {
                 window.location.reload();
             }
@@ -123,6 +127,20 @@ jQuery(function($) {
                 $('.dojo-error-container').show();
             }
         });
+    };
+
+    $('.dojo-install').click(function() {
+        doAction('install_extension', $(this));
+    });
+
+    $('.dojo-update').click(function() {
+        doAction('update_extension', $(this));
+    });
+
+    $('.dojo-remove').click(function() {
+        if (confirm('Are you sure you want to remove this add-on?')) {
+            doAction('remove_extension', $(this));
+        }
     });
 });
 </script>
