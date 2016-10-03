@@ -225,8 +225,8 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         $result = $upgrader->run( array(
             'package'           => $response['url'],
             'destination'       => plugin_dir_path( __FILE__ ) . 'dojo-' . $extension,
- 			'clear_destination' => true,
-			'clear_working'     => true,
+            'clear_destination' => true,
+            'clear_working'     => true,
         ) );
         ob_get_clean();
 
@@ -234,7 +234,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             return '<div class="dojo-danger">Error: Unable to connect to the file system</div>';
         }
         if ( $result instanceof WP_Error ) {
-            return '<div class="dojo-danger">Error: ' . esc_html( $response->get_error_message() ) . '</div>';
+            return '<div class="dojo-danger">Error: ' . esc_html( $result->get_error_message() ) . '</div>';
         }
 
         return 'success';
