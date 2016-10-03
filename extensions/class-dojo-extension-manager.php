@@ -150,6 +150,17 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         if ( $response instanceof WP_Error ) {
             return;
         }
+
+        $settings = Dojo_Settings::instance();
+
+        // make sure extensions that are supposed to be there are installed
+        // they could have been nuked on a core update
+        foreach ( $response['extensions'] as $extension_id => $title ) {
+            $class = 'Dojo_' . ucfirst( $extension_id );
+            if ( $settings->get( 'enable_extension_' . $class ) && ! class_exists( $class ) ) {
+                $this->install_extension( $extension_id );
+            }
+        }
 /*
         // check core version
         $core_info = get_plugin_data( Dojo::instance()->path_of( 'dojo.php' ), false, false );
@@ -279,6 +290,42 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         }
 
         $extension = $_POST['extension'];
+
+        return $this->install_extension( $extension );
+    }
+
+    public function api_update_extension() {
+        // for now, same thing
+        $this->api_install_extension();
+    }
+
+    public function api_remove_extension() {
+        if ( ! current_user_can( 'update_plugins' ) ) {
+            return 'Access denied';
+        }
+
+        if ( ! class_exists( 'WP_Upgrader' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+        }
+
+        // make sure extension exists
+        $extension = $_POST['extension'];
+
+        return $this->remove_extension( $extension );
+    }
+
+
+    /**** Utility ****/
+
+    private function remove_folder( $path ) {
+        $files = array_diff( scandir( $path ), array( '.', '..' ) );
+        foreach ( $files as $file ) {
+            ( is_dir( "$path/$file" ) ) ? $this->remove_folder( "$path/$file" ) : unlink( "$path/$file" );
+        }
+        return rmdir( $path );
+    }
+
+    private function install_extension( $extension ) {
         $response = $this->call_dojosource( 'get_extension', array(
             'extension'  => $extension,
         ) );
@@ -311,22 +358,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         return 'process_success';
     }
 
-    public function api_update_extension() {
-        // for now, same thing
-        $this->api_install_extension();
-    }
-
-    public function api_remove_extension() {
-        if ( ! current_user_can( 'update_plugins' ) ) {
-            return 'Access denied';
-        }
-
-        if ( ! class_exists( 'WP_Upgrader' ) ) {
-            require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-        }
-
-        // make sure extension exists
-        $extension = $_POST['extension'];
+    private function remove_extension( $extension ) {
         $class = 'Dojo_' . ucfirst( $extension );
         if ( ! class_exists( $class ) ) {
             return 'Extension not found';
@@ -343,17 +375,6 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         $settings->set( 'enable_extension_' . $class, false );
 
         return 'process_success';
-    }
-
-
-    /**** Utility ****/
-
-    private function remove_folder( $path ) {
-        $files = array_diff( scandir( $path ), array( '.', '..' ) );
-        foreach ( $files as $file ) {
-            ( is_dir( "$path/$file" ) ) ? $this->remove_folder( "$path/$file" ) : unlink( "$path/$file" );
-        }
-        return rmdir( $path );
     }
 }
 
