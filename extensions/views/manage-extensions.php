@@ -118,13 +118,13 @@ jQuery(function($) {
         var extension = btn.closest('.dojo-extension-block').attr('data-extension');
         var url = '<?php echo $this->ajax( '__ACTION__' ) ?>'.replace('__ACTION__', action);
         $.post(url, { extension: extension }, function(response) {
-            if (response == 'success') {
+            if (response.indexOf('process_success') != -1) {
                 window.location.reload();
             }
             else {
                 btn.show();
                 btn.next().hide();
-                $('.dojo-error').text(response);
+                $('.dojo-error').html(response);
                 $('.dojo-error-container').show();
             }
         });
