@@ -237,7 +237,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             return 'Error: ' . esc_html( $result->get_error_message() );
         }
 
-        return 'success';
+        return 'process_success';
     }
 
     public function api_update_extension() {
@@ -267,7 +267,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         // remove files
         $this->remove_folder( plugin_dir_path( __FILE__ ) . 'dojo-' . $extension );
 
-        return 'success';
+        return 'process_success';
     }
 
 
