@@ -215,7 +215,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         ) );
 
         if ( $response instanceof WP_Error ) {
-            return '<div class="dojo-danger">Error: ' . esc_html( $response->get_error_message() ) . '</div>';
+            return 'Error: ' . esc_html( $response->get_error_message() );
         }
 
         // intercept output from upgrader so it doesn't go back to client
@@ -231,10 +231,10 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         ob_get_clean();
 
         if ( false === $result ) {
-            return '<div class="dojo-danger">Error: Unable to connect to the file system</div>';
+            return 'Error: Unable to connect to the file system';
         }
         if ( $result instanceof WP_Error ) {
-            return '<div class="dojo-danger">Error: ' . esc_html( $result->get_error_message() ) . '</div>';
+            return 'Error: ' . esc_html( $result->get_error_message() );
         }
 
         return 'success';

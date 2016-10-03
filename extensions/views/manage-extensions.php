@@ -33,6 +33,11 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 </div>
 <div class="dojo-clear-space"></div>
 
+<div class="dojo-error-container" style="display:none;">
+    <div class="dojo-error"></div>
+    <div class="dojo-clear-space"></div>
+</div>
+
 <?php foreach ( $installed_extensions as $extension_id => $extension ) : ?>
 <div class="dojo-extension-block">
     <div class="dojo-large-icon dojo-left">
@@ -104,6 +109,7 @@ jQuery(function($) {
     $('.dojo-install,.dojo-update').click(function() {
         $(this).hide();
         $(this).next().show();
+        $('.dojo-error-container').hide();
         var extension = $(this).closest('.dojo-extension-block').attr('data-extension');
         $.post('<?php echo $this->ajax( 'install_extension' ) ?>', { extension: extension }, function(response) {
             if (response == 'success') {
@@ -112,7 +118,8 @@ jQuery(function($) {
             else {
                 $(this).show();
                 $(this).next().hide();
-                alert(response);
+                $('.dojo-error').html(response);
+                $('.dojo-error-container').show();
             }
         });
     });
