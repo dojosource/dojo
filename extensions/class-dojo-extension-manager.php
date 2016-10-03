@@ -264,18 +264,21 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         // uninstall extension
         $this->get_instance( $class . '_Installer' )->uninstall();
 
-        // use wordpress upgrader to remove files
-        ob_start();
-        $upgrader = new WP_Upgrader();
-        $upgrader->init();
-        $result = $upgrader->clear_destination( plugin_dir_path( __FILE__ ) . 'dojo-' . $extension );
-        ob_get_clean();
-
-        if ( $result instanceof WP_Error ) {
-            return 'Error: ' . esc_html( $result->get_error_message() );
-        }
+        // remove files
+        $this->remove_folder( plugin_dir_path( __FILE__ ) . 'dojo-' . $extension );
 
         return 'success';
+    }
+
+
+    /**** Utility ****/
+
+    private function remove_folder( $path ) {
+        $files = array_diff( scandir( $path ), array( '.', '..' ) );
+        foreach ( $files as $file ) {
+            ( is_dir( "$path/$file" ) ) ? $this->remove_folder( "$path/$file" ) : unlink( "$path/$file" );
+        }
+        return rmdir( $path );
     }
 }
 
