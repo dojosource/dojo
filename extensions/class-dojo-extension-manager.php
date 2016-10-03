@@ -262,7 +262,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         }
 
         // uninstall extension
-        $this->get_instance( $class )->uninstall();
+        $this->get_instance( $class . '_Installer' )->uninstall();
 
         // use wordpress upgrader to remove files
         ob_start();
