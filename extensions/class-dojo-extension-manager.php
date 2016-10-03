@@ -18,6 +18,10 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             'dojo_update',
         ) );
 
+        $this->register_filters( array (
+            'pre_set_site_transient_update_plugins',
+        ) );
+
         $settings = Dojo_Settings::instance();
 
         // core list of extensions will always be enabled
@@ -146,7 +150,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         if ( $response instanceof WP_Error ) {
             return;
         }
-
+/*
         // check core version
         $core_info = get_plugin_data( Dojo::instance()->path_of( 'dojo.php' ), false, false );
         if ( $response['versions']['core'] != $core_info['Version'] ) {
@@ -161,6 +165,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
             // get wordpress plugin update info
             $current = get_site_transient( 'update_plugins' );
+            error_log(print_r($current, true));
             if ( ! is_object( $current ) ) {
                 $current = new stdClass;
             }
@@ -172,6 +177,30 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             $current->response['dojo/dojo.php'] = $release;
             set_site_transient( 'update_plugins', $current );
         }
+*/
+        return true;
+    }
+
+
+    /**** Filters ****/
+
+    public function filter_pre_set_site_transient_update_plugins( $value ) {
+
+        // inject a check for dojo core updates
+        $response = $this->call_dojosource( 'get_extension_info' );
+
+        if ( ! ( $response instanceof WP_Error ) ) {
+            $release = new stdClass();
+            $release->package = 'https://s3.amazonaws.com/dojosource/release/dojo.zip';
+            $release->slug = 'dojo';
+            $release->plugin = 'dojo/dojo.php';
+            $release->new_version = $response['versions']['core'];
+            $release->url = 'https://dojosource.com';
+
+            $value->response['dojo/dojo.php'] = $release;
+        }
+
+        return $value;
     }
 
 
