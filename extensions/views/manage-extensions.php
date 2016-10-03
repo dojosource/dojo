@@ -116,7 +116,8 @@ jQuery(function($) {
         btn.next().show();
         $('.dojo-error-container').hide();
         var extension = $(this).closest('.dojo-extension-block').attr('data-extension');
-        $.post('<?php echo $this->ajax( action ) ?>', { extension: extension }, function(response) {
+        var url = '<?php echo $this->ajax( '__ACTION__' ) ?>'.replace('__ACTION__', action);
+        $.post(url, { extension: extension }, function(response) {
             if (response == 'success') {
                 window.location.reload();
             }
