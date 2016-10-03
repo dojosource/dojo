@@ -185,6 +185,9 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
     /**** Ajax Handlers ****/
 
     public function api_get_management_view() {
+        if ( ! current_user_can( 'update_plugins' ) ) {
+            return 'Access denied';
+        }
         $response = $this->call_dojosource( 'get_extension_info' );
 
         if ( $response instanceof WP_Error ) {
@@ -195,6 +198,50 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         ob_start();
         include 'views/manage-extensions.php';
         return ob_get_clean();
+    }
+
+    public function api_install_extension() {
+        if ( ! current_user_can( 'update_plugins' ) ) {
+            return 'Access denied';
+        }
+
+        if ( ! class_exists( 'WP_Upgrader' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+        }
+
+        $extension = $_POST['extension'];
+        $response = $this->call_dojosource( 'get_extension', array(
+            'extension'  => $extension,
+        ) );
+
+        if ( $response instanceof WP_Error ) {
+            return '<div class="dojo-danger">Error: ' . esc_html( $response->get_error_message() ) . '</div>';
+        }
+
+        // current path not resolving symlink
+        $path =  plugin_dir_path( WP_PLUGIN_DIR . '/' . plugin_basename(__FILE__) );
+
+        $upgrader = new WP_Upgrader();
+        $upgrader->init();
+        $result = $upgrader->run( array(
+            'package'           => $response['url'],
+            'destination'       => $path . 'dojo-' . $extension,
+ 			'clear_destination' => false,
+			'clear_working'     => true,
+        ) );
+
+        if ( false === $result ) {
+            return '<div class="dojo-danger">Error: Unable to connect to the file system</div>';
+        }
+        if ( $result instanceof WP_Error ) {
+            return '<div class="dojo-danger">Error: ' . esc_html( $response->get_error_message() ) . '</div>';
+        }
+
+        return 'success';
+    }
+
+    public function api_update_extension() {
+
     }
 }
 

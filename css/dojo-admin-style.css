@@ -179,3 +179,8 @@ a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:vi
     text-align: right;
     margin-bottom: 5px;
 }
+
+.dojo-extension-info {
+    color: #777;
+    margin-left: 50px;
+}

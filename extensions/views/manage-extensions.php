@@ -73,7 +73,7 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 <?php endforeach; ?>
 
 <?php foreach ( $available_extensions as $extension_id => $extension_title ) : ?>
-<div class="dojo-extension-block">
+<div class="dojo-extension-block" data-extension="<?php echo esc_attr( $extension_id ) ?>">
     <div class="dojo-large-icon dojo-left">
         <span class="dashicons dashicons-<?php echo $info['icons'][ $extension_id ] ?>"></span>
     </div>
@@ -82,17 +82,31 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
             <?php echo esc_html( $extension_title ) ?>
         </div>
         <div>
-            Available
+            Available to download
         </div>
     </div>
     <div class="dojo-right">
-        <a href="javascript:;" class="button button-primary">Install</a>
+        <a href="javascript:;" class="button button-primary dojo-install">Install Now</a>
+        <div style="display:none;">Installing... <img src="/wp-admin/images/spinner.gif"></div>
     </div>
     <div class="dojo-clear"></div>
+    <div class="dojo-extension-info">
+        <?php echo esc_html( $info['descriptions'][ $extension_id ] ) ?>
+    </div>
 </div>
 <?php endforeach; ?>
 
-<?php foreach ( $info['extensions'] as $extension ) : ?>
-<div><?php echo esc_html( $extension ) ?></div>
-<?php endforeach; ?>
 
+<script>
+jQuery(function($) {
+
+    $('.dojo-install').click(function() {
+        $(this).hide();
+        $(this).next().show();
+        var extension = $(this).closest('.dojo-extension-block').attr('data-extension');
+        $.post('<?php echo $this->ajax( 'install_extension' ) ?>', { extension: extension }, function(response) {
+            $(this).closest('.dojo-extension-block').html(response);
+        });
+    });
+});
+</script>
