@@ -30,9 +30,8 @@ final class Dojo extends Dojo_WP_Base {
     }
 
     private function init() {
-        // symlink safe path and url
-        $this->plugin_path =  plugin_dir_path( WP_PLUGIN_DIR . '/' . plugin_basename(__FILE__) );
-        $this->plugin_url =  plugin_dir_url( WP_PLUGIN_DIR . '/' . plugin_basename(__FILE__) );
+        $this->plugin_path = plugin_dir_path( __FILE__ );
+        $this->plugin_url = plugin_dir_url( __FILE__ );
 
         $this->register_action_handlers( array(
             'plugins_loaded',
