@@ -64,7 +64,8 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
         </div>
         <?php if ( $info['versions'][ $extension_id ] != $extension->version() ) : ?>
         <div>
-            <a href="javascript:;" class="button button-primary">Update</a>
+            <a href="javascript:;" class="button button-primary dojo-update">Update Now</a>
+            <div style="display:none;">Installing... <img src="/wp-admin/images/spinner.gif"></div>
         </div>
         <?php endif; ?>
     </div>
@@ -100,12 +101,19 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 <script>
 jQuery(function($) {
 
-    $('.dojo-install').click(function() {
+    $('.dojo-install,.dojo-update').click(function() {
         $(this).hide();
         $(this).next().show();
         var extension = $(this).closest('.dojo-extension-block').attr('data-extension');
         $.post('<?php echo $this->ajax( 'install_extension' ) ?>', { extension: extension }, function(response) {
-            $(this).closest('.dojo-extension-block').html(response);
+            if (response == 'success') {
+                window.location.reload();
+            }
+            else {
+                $(this).show();
+                $(this).next().hide();
+                alert(response);
+            }
         });
     });
 });

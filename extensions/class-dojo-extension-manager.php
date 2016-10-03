@@ -218,17 +218,17 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             return '<div class="dojo-danger">Error: ' . esc_html( $response->get_error_message() ) . '</div>';
         }
 
-        // current path not resolving symlink
-        $path =  plugin_dir_path( WP_PLUGIN_DIR . '/' . plugin_basename(__FILE__) );
-
+        // intercept output from upgrader so it doesn't go back to client
+        ob_start();
         $upgrader = new WP_Upgrader();
         $upgrader->init();
         $result = $upgrader->run( array(
             'package'           => $response['url'],
-            'destination'       => $path . 'dojo-' . $extension,
- 			'clear_destination' => false,
+            'destination'       => plugin_dir_path( __FILE__ ) . 'dojo-' . $extension,
+ 			'clear_destination' => true,
 			'clear_working'     => true,
         ) );
+        ob_get_clean();
 
         if ( false === $result ) {
             return '<div class="dojo-danger">Error: Unable to connect to the file system</div>';
@@ -241,7 +241,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
     }
 
     public function api_update_extension() {
-
+        $this->api_install_extension();
     }
 }
 
