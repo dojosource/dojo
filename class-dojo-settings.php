@@ -45,6 +45,19 @@ class Dojo_Settings {
     }
 
     /**
+     * Set option setting
+     *
+     * @param $option_id
+     * @param $value
+     *
+     * @return void;
+     */
+    public function set( $option_id, $value ) {
+        $this->options[ $option_id ] = $value;
+        set_option( 'dojo_options', $this->options );
+    }
+
+    /**
      * Register a new options section 
      * 
      *  @param string $section_id Section identifier

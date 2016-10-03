@@ -28,9 +28,10 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 
 ?>
 
-<div class="dojo-info" style="font-size:16px;">
+<div style="font-size:20px;">
     <strong>Current License:</strong> <?php echo esc_html( $info['license'] ) ?>
 </div>
+
 <div class="dojo-clear-space"></div>
 
 <div class="dojo-error-container" style="display:none;">

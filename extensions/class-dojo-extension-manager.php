@@ -14,6 +14,10 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
     private $core_extensions;
 
     private function __construct() {
+        $this->register_action_handlers( array (
+            'dojo_update',
+        ) );
+
         $settings = Dojo_Settings::instance();
 
         // core list of extensions will always be enabled
@@ -133,9 +137,45 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         }
     }
 
-    public function check_for_updates() {
 
+    /**** Action Handlers ****/
+
+    public function handle_dojo_update() {
+        $response = $this->call_dojosource( 'get_extension_info' );
+
+        if ( $response instanceof WP_Error ) {
+            return;
+        }
+
+        // check core version
+        $core_info = get_plugin_data( Dojo::instance()->path_of( 'dojo.php' ), false, false );
+        if ( $response['versions']['core'] != $core_info['Version'] ) {
+
+            // create release info for dojo
+            $release = new stdClass();
+            $release->package = 'https://s3.amazonaws.com/dojosource/release/dojo.zip';
+            $release->slug = 'dojo';
+            $release->plugin = 'dojo/dojo.php';
+            $release->new_version = $response['versions']['core'];
+            $release->url = 'https://dojosource.com';
+
+            // get wordpress plugin update info
+            $current = get_site_transient( 'update_plugins' );
+            if ( ! is_object( $current ) ) {
+                $current = new stdClass;
+            }
+
+            // add release info to wordpress plugin update info
+            if ( ! isset( $current->response ) || ! is_array( $current->response ) ) {
+                $current->response = array();
+            }
+            $current->response['dojo/dojo.php'] = $release;
+            set_site_transient( 'update_plugins', $current );
+        }
     }
+
+
+    /**** Utilities ****/
 
     private function call_dojosource( $method, $params = array() ) {
         $settings = Dojo_Settings::instance();
@@ -218,8 +258,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             return 'Error: ' . esc_html( $response->get_error_message() );
         }
 
-        // intercept output from upgrader so it doesn't echo back to client
-        ob_start();
+        // use built-in upgrader
         $upgrader = new WP_Upgrader();
         $upgrader->init();
         $result = $upgrader->run( array(
@@ -228,7 +267,6 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             'clear_destination' => true,
             'clear_working'     => true,
         ) );
-        ob_get_clean();
 
         if ( false === $result ) {
             return 'Error: Unable to connect to the file system';
@@ -236,6 +274,10 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         if ( $result instanceof WP_Error ) {
             return 'Error: ' . esc_html( $result->get_error_message() );
         }
+
+        $settings = Dojo_Settings::instance();
+        $class = 'Dojo_' . ucfirst( $extension );
+        $settings->set( 'enable_extension_' . $class, true );
 
         return 'process_success';
     }
@@ -266,6 +308,10 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
         // remove files
         $this->remove_folder( plugin_dir_path( __FILE__ ) . 'dojo-' . $extension );
+
+        // setting this false will prevent autoloading on core plugin update
+        $settings = Dojo_Settings::instance();
+        $settings->set( 'enable_extension_' . $class, false );
 
         return 'process_success';
     }
