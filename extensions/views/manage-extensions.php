@@ -39,7 +39,7 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 </div>
 
 <?php foreach ( $installed_extensions as $extension_id => $extension ) : ?>
-<div class="dojo-extension-block">
+<div class="dojo-extension-block" data-extension="<?php echo esc_attr( $extension_id ) ?>">
     <div class="dojo-large-icon dojo-left">
         <span class="dashicons dashicons-<?php echo $info['icons'][ $extension_id ] ?>"></span>
     </div>
