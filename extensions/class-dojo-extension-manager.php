@@ -15,7 +15,6 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
     private function __construct() {
         $this->register_action_handlers( array (
-            'dojo_update',
             array( 'upgrader_process_complete', 10, 2 ),
         ) );
 
@@ -145,42 +144,6 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
     /**** Action Handlers ****/
 
-    public function handle_dojo_update() {
-
-        /*
-
-        */
-/*
-        // check core version
-        $core_info = get_plugin_data( Dojo::instance()->path_of( 'dojo.php' ), false, false );
-        if ( $response['versions']['core'] != $core_info['Version'] ) {
-
-            // create release info for dojo
-            $release = new stdClass();
-            $release->package = 'https://s3.amazonaws.com/dojosource/release/dojo.zip';
-            $release->slug = 'dojo';
-            $release->plugin = 'dojo/dojo.php';
-            $release->new_version = $response['versions']['core'];
-            $release->url = 'https://dojosource.com';
-
-            // get wordpress plugin update info
-            $current = get_site_transient( 'update_plugins' );
-            error_log(print_r($current, true));
-            if ( ! is_object( $current ) ) {
-                $current = new stdClass;
-            }
-
-            // add release info to wordpress plugin update info
-            if ( ! isset( $current->response ) || ! is_array( $current->response ) ) {
-                $current->response = array();
-            }
-            $current->response['dojo/dojo.php'] = $release;
-            set_site_transient( 'update_plugins', $current );
-        }
-*/
-        return true;
-    }
-
     public function handle_upgrader_process_complete( $upgrader, $extra ) {
         // if this is the plugin upgrader at work
         if ( class_exists( 'Plugin_Upgrader' ) && $upgrader instanceof Plugin_Upgrader ) {
@@ -198,21 +161,12 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
                 // make sure extensions that are supposed to be there are installed
                 // they will have been nuked after a plugin update
                 foreach ( $response['extensions'] as $extension_id => $title ) {
-                    error_log( 'checking ' . $extension_id );
                     $class = 'Dojo_' . ucfirst( $extension_id );
                     $path = plugin_dir_path( __FILE__ ) . 'dojo-' . $extension_id;
 
                     // if class exists but folder does not then it just got nuked
                     if ( class_exists( $class ) && ! file_exists( $path ) ) {
-                        error_log( 'installing' );
                         $this->install_extension( $extension_id );
-                    } else {
-                        if ( $settings->get( 'enable_extension_' . $class ) ) {
-                            error_log('flag is set');
-                        }
-                        if ( class_exists( $class ) ) {
-                            error_log('class exists');
-                        }
                     }
                 }
             }
