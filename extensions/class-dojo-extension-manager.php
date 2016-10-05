@@ -366,7 +366,8 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         $this->remove_folder( $destination );
 
         // use built-in upgrader
-        $upgrader = new WP_Upgrader();
+        ob_start();
+        $upgrader = new WP_Upgrader( new Dojo_Silent_Upgrader_Skin() );
         $upgrader->init();
         $result = $upgrader->run( array(
             'package'           => $response['url'],
@@ -374,6 +375,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             'clear_destination' => false,
             'clear_working'     => true,
         ) );
+        ob_get_clean();
 
         if ( false === $result ) {
             return 'Error: Unable to connect to the file system';
@@ -409,4 +411,12 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
     }
 }
 
-
+/**
+ * Class Dojo_Silent_Upgrader_Skin
+ *
+ * Overrides the feedback method to prevent flushing messages to the output stream
+ */
+class Dojo_Silent_Upgrader_Skin extends WP_Upgrader_Skin {
+    public function feedback( $string ) {
+    }
+}
