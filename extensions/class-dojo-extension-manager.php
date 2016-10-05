@@ -361,13 +361,17 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
             return 'Error: ' . esc_html( $response->get_error_message() );
         }
 
+        // clear the destination
+        $destination = plugin_dir_path( __FILE__ ) . 'dojo-' . $extension;
+        $this->remove_folder( $destination );
+
         // use built-in upgrader
         $upgrader = new WP_Upgrader();
         $upgrader->init();
         $result = $upgrader->run( array(
             'package'           => $response['url'],
-            'destination'       => plugin_dir_path( __FILE__ ) . 'dojo-' . $extension,
-            'clear_destination' => true,
+            'destination'       => $destination,
+            'clear_destination' => false,
             'clear_working'     => true,
         ) );
 
