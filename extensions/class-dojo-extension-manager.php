@@ -148,24 +148,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
     public function handle_dojo_update() {
 
         /*
-        $response = $this->call_dojosource( 'get_extension_info' );
 
-        if ( $response instanceof WP_Error ) {
-            return;
-        }
-
-        $settings = Dojo_Settings::instance();
-
-        // make sure extensions that are supposed to be there are installed
-        // they could have been nuked on a core update
-        foreach ( $response['extensions'] as $extension_id => $title ) {
-            error_log( 'checking ' . $extension_id );
-            $class = 'Dojo_' . ucfirst( $extension_id );
-            if ( $settings->get( 'enable_extension_' . $class ) && ! class_exists( $class ) ) {
-                error_log( 'installing' );
-                $this->install_extension( $extension_id );
-            }
-        }
         */
 /*
         // check core version
@@ -199,10 +182,29 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
     }
 
     public function handle_upgrader_process_complete( $upgrader, $extra ) {
-        error_log(print_r($extra, true));
+        // if this is the plugin upgrader at work
         if ( class_exists( 'Plugin_Upgrader' ) && $upgrader instanceof Plugin_Upgrader ) {
-            if ( isset( $extra['plugins']['dojo/dojo.php'] ) ) {
-                error_log('check updates here');
+
+            // if this is an update and the dojo plugin is part of it
+            if ( 'update' == $extra['action'] && false !== array_search( 'dojo/dojo.php', $extra['plugins'] ) ) {
+
+                // get active extensions from dojo source
+                $response = $this->call_dojosource( 'get_extension_info' );
+                if ( $response instanceof WP_Error ) {
+                    return;
+                }
+                $settings = Dojo_Settings::instance();
+
+                // make sure extensions that are supposed to be there are installed
+                // they will have been nuked after a plugin update
+                foreach ( $response['extensions'] as $extension_id => $title ) {
+                    error_log( 'checking ' . $extension_id );
+                    $class = 'Dojo_' . ucfirst( $extension_id );
+                    if ( $settings->get( 'enable_extension_' . $class ) && ! class_exists( $class ) ) {
+                        error_log( 'installing' );
+                        $this->install_extension( $extension_id );
+                    }
+                }
             }
         }
     }
