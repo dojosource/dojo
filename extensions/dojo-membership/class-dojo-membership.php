@@ -163,7 +163,7 @@ Email: '.$_POST['email'].'
 Phone: '.$_POST['phone']
                 );
             } catch ( Exception $ex ) {
-                debug( 'Error sending email ' . $ex->getMessage() );
+                $this->debug( 'Error sending email ' . $ex->getMessage() );
             }
 
             echo 'success';
