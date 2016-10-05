@@ -16,6 +16,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
     private function __construct() {
         $this->register_action_handlers( array (
             'dojo_update',
+            array( 'upgrader_process_complete', 10, 2 ),
         ) );
 
         $this->register_filters( array (
@@ -145,6 +146,8 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
     /**** Action Handlers ****/
 
     public function handle_dojo_update() {
+
+        /*
         $response = $this->call_dojosource( 'get_extension_info' );
 
         if ( $response instanceof WP_Error ) {
@@ -156,11 +159,14 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         // make sure extensions that are supposed to be there are installed
         // they could have been nuked on a core update
         foreach ( $response['extensions'] as $extension_id => $title ) {
+            error_log( 'checking ' . $extension_id );
             $class = 'Dojo_' . ucfirst( $extension_id );
             if ( $settings->get( 'enable_extension_' . $class ) && ! class_exists( $class ) ) {
+                error_log( 'installing' );
                 $this->install_extension( $extension_id );
             }
         }
+        */
 /*
         // check core version
         $core_info = get_plugin_data( Dojo::instance()->path_of( 'dojo.php' ), false, false );
@@ -190,6 +196,15 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
         }
 */
         return true;
+    }
+
+    public function handle_upgrader_process_complete( $upgrader, $extra ) {
+        error_log(print_r($extra, true));
+        if ( class_exists( 'Plugin_Upgrader' ) && $upgrader instanceof Plugin_Upgrader ) {
+            if ( isset( $extra['plugins']['dojo/dojo.php'] ) ) {
+                error_log('check updates here');
+            }
+        }
     }
 
 
