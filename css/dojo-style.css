@@ -1,219 +1,219 @@
 .dojo-field {
-    padding-top: 10px;
-    padding-bottom: 10px;
+	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 .dojo-field label, .dojo-field .dojo-name {
-    display: block;
-    float: none;
-    font-weight: bold;
+	display: block;
+	float: none;
+	font-weight: bold;
 }
 
 .dojo-field input[type="text"], .dojo-field input[type="password"], .dojo-field .dojo-value {
-    width: auto;
+	width: auto;
 }
 
 
 @media (min-width: 768px) {
-    .dojo-field {
-        clear: left;
-    }
+	.dojo-field {
+		clear: left;
+	}
 
-    .dojo-field label, .dojo-field .dojo-name {
-        float: left;
-        width: 200px;
-    }
-    
-    .dojo-field button {
-        margin-left: 200px;
-    }
+	.dojo-field label, .dojo-field .dojo-name {
+		float: left;
+		width: 200px;
+	}
 
-    .dojo-field input[type="text"], .dojo-field input[type="password"], .dojo-field .dojo-value {
-        float: left;
-    }
+	.dojo-field button {
+		margin-left: 200px;
+	}
+
+	.dojo-field input[type="text"], .dojo-field input[type="password"], .dojo-field .dojo-value {
+		float: left;
+	}
 }
 
 .dojo-error {
-    background-color: #f2dede;
-    padding: 10px;
-    margin-top: 10px;
+	background-color: #f2dede;
+	padding: 10px;
+	margin-top: 10px;
 }
 
 a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:visited:active.dojo-red-link {
-    color: #a00;
+	color: #a00;
 }
 
 .dojo-green {
-    color: #007700;
+	color: #007700;
 }
 
 .dojo-red {
-    color: #a00;
+	color: #a00;
 }
 
 .dojo-block {
-    padding: 15px;
-    background-color: #eee;
+	padding: 15px;
+	background-color: #eee;
 }
 
 .dojo .dojo-block h3, .dojo .dojo-select-list-item h3, .dojo .dojo-container h3 {
-    margin-top: 0px;
-    margin-bottom: 0.8em;
-    clear: none;
+	margin-top: 0px;
+	margin-bottom: 0.8em;
+	clear: none;
 }
 
 .dojo .dojo-block h4, .dojo .dojo-select-list-item h4, .dojo .dojo-container h4 {
-    margin-top: 0.8em;
-    margin-bottom: 0.8em;
+	margin-top: 0.8em;
+	margin-bottom: 0.8em;
 }
 
 .dojo .dojo-container label {
-    display: block;
+	display: block;
 }
 
 .dojo-info {
-    padding: 15px;
-    background-color: #d9edf7;
+	padding: 15px;
+	background-color: #d9edf7;
 }
 
 .dojo-warn {
-    padding: 15px;
-    background-color: #fcf8e3;
+	padding: 15px;
+	background-color: #fcf8e3;
 }
 
 .dojo-danger {
-    padding: 15px;
-    background-color: #f2dede;
+	padding: 15px;
+	background-color: #f2dede;
 }
 
 select.dojo-small-select {
-    width: 100px;
+	width: 100px;
 }
 
 .dojo-select-list {
-    margin-bottom: 20px;
+	margin-bottom: 20px;
 }
 
 .dojo-select-list-item {
-    position: relative;
-    display: block;
-    padding: .75rem 1.25rem;
-    margin-bottom: -1px;
-    background-color: #fff;
-    border: 1px solid #ddd;
+	position: relative;
+	display: block;
+	padding: .75rem 1.25rem;
+	margin-bottom: -1px;
+	background-color: #fff;
+	border: 1px solid #ddd;
 }
 
 .dojo-select-list-item:hover {
-    background-color: #f5f5f5;
-    cursor: pointer;
+	background-color: #f5f5f5;
+	cursor: pointer;
 }
 
 .dojo-select-list-item:first-child {
-    border-top-right-radius: .25rem;
-    border-top-left-radius: .25rem;
+	border-top-right-radius: .25rem;
+	border-top-left-radius: .25rem;
 }
 
 .dojo-select-list-item:last-child {
-    margin-bottom: 0;
-    border-bottom-right-radius: .25rem;
-    border-bottom-left-radius: .25rem;
+	margin-bottom: 0;
+	border-bottom-right-radius: .25rem;
+	border-bottom-left-radius: .25rem;
 }
 
 .dojo-left {
-    float: left;
+	float: left;
 }
 
 .dojo-left-space {
-    float: left;
-    margin-right: 20px;
+	float: left;
+	margin-right: 20px;
 }
 
 .dojo-right {
-    float: right;
+	float: right;
 }
 
 .dojo-right-space {
-    float: right;
-    margin-left: 20px;
+	float: right;
+	margin-left: 20px;
 }
 
 .dojo-text-right {
-    text-align: right;
+	text-align: right;
 }
 
 .dojo-container {
-    width: 100%;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+	width: 100%;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 .dojo-row {
-    margin-right: -15px;
-    margin-left: -15px;
+	margin-right: -15px;
+	margin-left: -15px;
 }
 
 .dojo-col-md-4, .dojo-col-md-5, .dojo-col-md-6, .dojo-col-md-7, .dojo-col-md-8 {
-    position: relative;
-    min-height: 1px;
-    padding-right: 15px;
-    padding-left: 15px;
+	position: relative;
+	min-height: 1px;
+	padding-right: 15px;
+	padding-left: 15px;
 }
 
 @media (min-width: 992px) {
-    .dojo-col-md-4, .dojo-col-md-5, .dojo-col-md-6, .dojo-col-md-7, .dojo-col-md-8 {
-        float: left;
-    }
-    .dojo-col-md-4 {
-        width: 33.33333333%;
-    }
+	.dojo-col-md-4, .dojo-col-md-5, .dojo-col-md-6, .dojo-col-md-7, .dojo-col-md-8 {
+		float: left;
+	}
+	.dojo-col-md-4 {
+		width: 33.33333333%;
+	}
 
-    .dojo-col-md-5 {
-        width: 41.66666667%;
-    }
+	.dojo-col-md-5 {
+		width: 41.66666667%;
+	}
 
-    .dojo-col-md-6 {
-        width: 50%;
-    }
+	.dojo-col-md-6 {
+		width: 50%;
+	}
 
-    .dojo-col-md-7 {
-        width: 58.33333333%;
-    }
+	.dojo-col-md-7 {
+		width: 58.33333333%;
+	}
 
-    .dojo-col-md-8 {
-        width: 66.66666667%;
-    }
+	.dojo-col-md-8 {
+		width: 66.66666667%;
+	}
 
-    .dojo-hide-md {
-        display: none;
-    }
+	.dojo-hide-md {
+		display: none;
+	}
 }
 
 .dojo-clear, .dojo-clear-space {
-    clear: both;
+	clear: both;
 }
 
 .dojo-clear-space {
-    height: 20px;
+	height: 20px;
 }
 
 .dojo-spacer {
-    height: 20px;
+	height: 20px;
 }
 
 .dojo-dashicons-middle:before {
-    vertical-align: middle;
+	vertical-align: middle;
 }
 
 .dojo ::-webkit-input-placeholder {
-    color: #999;
+	color: #999;
 }
 .dojo :-moz-placeholder {
-    color: #999;
+	color: #999;
 }
 .dojo ::-moz-placeholder {
-    color: #999;
+	color: #999;
 }
 .dojo :-ms-input-placeholder {
-    color: #999;
+	color: #999;
 }

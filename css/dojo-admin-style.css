@@ -1,185 +1,185 @@
 .dojo-danger {
-    background-color: #f2dede;
-    padding: 15px;
-    margin-top: 15px;
+	background-color: #f2dede;
+	padding: 15px;
+	margin-top: 15px;
 }
 
 .dojo-warn {
-    background-color: #fcf8e3;
-    padding: 15px;
-    margin-top: 15px;
+	background-color: #fcf8e3;
+	padding: 15px;
+	margin-top: 15px;
 }
 
 .dojo-info {
-    background-color: #d9edf7;
-    padding: 15px;
-    margin-top: 15px;
+	background-color: #d9edf7;
+	padding: 15px;
+	margin-top: 15px;
 }
 
 .dojo-block {
-    background-color: #fff;
-    padding: 10px 20px;
-    border: 1px solid #ddd;
+	background-color: #fff;
+	padding: 10px 20px;
+	border: 1px solid #ddd;
 }
 
 .dojo-block .form-table th {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    width: 140px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	width: 140px;
 }
 
 .dojo-block .form-table td {
-    padding-top: 5px;
-    padding-bottom: 5px;
+	padding-top: 5px;
+	padding-bottom: 5px;
 }
 
 .dojo-block h3 {
-    margin: 0px;
+	margin: 0px;
 }
 
 .dojo-sortable li {
-    background-color: #fff;
-    padding: 10px 20px;
-    border: 1px solid #ddd;
-    max-width: 400px;
-    cursor: move;
+	background-color: #fff;
+	padding: 10px 20px;
+	border: 1px solid #ddd;
+	max-width: 400px;
+	cursor: move;
 }
 
 .dojo .form-table input[type=radio] {
-    margin-top: 5px;
-    margin-bottom: 5px;
+	margin-top: 5px;
+	margin-bottom: 5px;
 }
 
 .dojo .form-table input[type=checkbox] {
-    margin-top: 5px;
-    margin-bottom: 5px;
+	margin-top: 5px;
+	margin-bottom: 5px;
 }
 
 a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:visited:active.dojo-red-link {
-    color: #a00;
+	color: #a00;
 }
 
 .dojo-green {
-    color: #007700;
+	color: #007700;
 }
 
 .dojo-yellow {
-    color: #ddaa00;
+	color: #ddaa00;
 }
 
 .dojo-red {
-    color: #a00;
+	color: #a00;
 }
 
 .dojo-clear {
-    clear: both;
+	clear: both;
 }
 
 .dojo-clear-space {
-    clear: both;
-    height: 20px;
+	clear: both;
+	height: 20px;
 }
 
 .dojo-spacer {
-    height: 20px;
+	height: 20px;
 }
 
 .dojo-left {
-    float: left;
+	float: left;
 }
 
 .dojo-left-space {
-    float: left;
-    margin-right: 20px;
+	float: left;
+	margin-right: 20px;
 }
 
 .dojo-right {
-    float: right;
+	float: right;
 }
 
 .dojo-right-space {
-    float: right;
-    margin-left: 20px;
+	float: right;
+	margin-left: 20px;
 }
 
 .dojo-container {
-    width: 100%;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+	width: 100%;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 .dojo-row {
-    position: relative;
-    margin-right: -15px;
-    margin-left: -15px;
+	position: relative;
+	margin-right: -15px;
+	margin-left: -15px;
 }
 
 .dojo-col-md-3, .dojo-col-md-4, .dojo-col-md-5, .dojo-col-md-6, .dojo-col-md-7, .dojo-col-md-8 {
-    position: relative;
-    min-height: 1px;
-    padding-right: 15px;
-    padding-left: 15px;
+	position: relative;
+	min-height: 1px;
+	padding-right: 15px;
+	padding-left: 15px;
 }
 
 @media (min-width: 992px) {
-    .dojo-col-md-3, .dojo-col-md-4, .dojo-col-md-5, .dojo-col-md-6, .dojo-col-md-7, .dojo-col-md-8 {
-        float: left;
-    }
+	.dojo-col-md-3, .dojo-col-md-4, .dojo-col-md-5, .dojo-col-md-6, .dojo-col-md-7, .dojo-col-md-8 {
+		float: left;
+	}
 
-    .dojo-col-md-3 {
-        width: 25%;
-    }
+	.dojo-col-md-3 {
+		width: 25%;
+	}
 
-    .dojo-col-md-4 {
-        width: 33.33333333%;
-    }
+	.dojo-col-md-4 {
+		width: 33.33333333%;
+	}
 
-    .dojo-col-md-5 {
-        width: 41.66666667%;
-    }
+	.dojo-col-md-5 {
+		width: 41.66666667%;
+	}
 
-    .dojo-col-md-6 {
-        width: 50%;
-    }
+	.dojo-col-md-6 {
+		width: 50%;
+	}
 
-    .dojo-col-md-7 {
-        width: 58.33333333%;
-    }
+	.dojo-col-md-7 {
+		width: 58.33333333%;
+	}
 
-    .dojo-col-md-8 {
-        width: 66.66666667%;
-    }
+	.dojo-col-md-8 {
+		width: 66.66666667%;
+	}
 
-    .dojo-hide-md {
-        display: none;
-    }
+	.dojo-hide-md {
+		display: none;
+	}
 }
 
 .dojo-large-icon {
-    width: 50px;
-    height: 50px;
+	width: 50px;
+	height: 50px;
 }
 .dojo-large-icon .dashicons {
-    font-size: 42px;
+	font-size: 42px;
 }
 
 .dojo-extension-block {
-    background-color: #ddd;
-    padding: 10px;
-    margin-bottom: 10px;
-    max-width: 360px;
+	background-color: #ddd;
+	padding: 10px;
+	margin-bottom: 10px;
+	max-width: 360px;
 }
 
 .dojo-extension-title {
-    font-size: 24px;
+	font-size: 24px;
 }
 
 .dojo-extension-version {
-    text-align: right;
+	text-align: right;
 }
 
 .dojo-extension-info {
-    color: #777;
-    margin-left: 50px;
+	color: #777;
+	margin-left: 50px;
 }
