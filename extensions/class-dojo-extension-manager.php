@@ -411,6 +411,8 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
     }
 }
 
+require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php';
+
 /**
  * Class Dojo_Silent_Upgrader_Skin
  *
