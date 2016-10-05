@@ -200,9 +200,19 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
                 foreach ( $response['extensions'] as $extension_id => $title ) {
                     error_log( 'checking ' . $extension_id );
                     $class = 'Dojo_' . ucfirst( $extension_id );
-                    if ( $settings->get( 'enable_extension_' . $class ) && ! class_exists( $class ) ) {
+                    $path = plugin_dir_path( __FILE__ ) . 'dojo-' . $extension_id;
+
+                    // if class exists but folder does not then it just got nuked
+                    if ( class_exists( $class ) && ! file_exists( $path ) ) {
                         error_log( 'installing' );
                         $this->install_extension( $extension_id );
+                    } else {
+                        if ( $settings->get( 'enable_extension_' . $class ) ) {
+                            error_log('flag is set');
+                        }
+                        if ( class_exists( $class ) ) {
+                            error_log('class exists');
+                        }
                     }
                 }
             }
