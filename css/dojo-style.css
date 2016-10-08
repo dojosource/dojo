@@ -39,6 +39,10 @@
 	margin-top: 10px;
 }
 
+a:link.dojo-green-link, a:visited.dojo-green-link, a:link:active.dojo-green-link, a:visited:active.dojo-green-link {
+	color: #007700;
+}
+
 a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:visited:active.dojo-red-link {
 	color: #a00;
 }

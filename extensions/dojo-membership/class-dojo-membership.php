@@ -876,7 +876,8 @@ Membership: ' . $student->contract->title . '
 	}
 
 	public function render_option_membership_slug() {
-		$this->render_option_regular_text( 'membership_slug', 'All membership pages are under ' . esc_html( $this->membership_url( '' ) ) );
+		$url = $this->membership_url( '' );
+		$this->render_option_regular_text( 'membership_slug', 'All membership pages are under <a href="' . esc_attr( $url ) . '">' . esc_html( $url ) . '</a>' );
 	}
 
 	public function render_option_membership_debug_date() {
