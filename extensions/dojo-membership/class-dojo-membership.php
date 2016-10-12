@@ -802,7 +802,13 @@ Membership: ' . $student->contract->title . '
 					'last_upcoming_payment_event'   => $this->time( 'mysql' )
 				) );
 				$this->log_event( 'Upcoming payment due', $user_id );
-				do_action( 'dojo_membership_upcoming_payment_due', $memberships_due[ $user_id ] );
+
+				$info = array(
+					'user_id'         => $user_id,
+					'memberships_due' => $memberships_due[ $user_id ],
+					'line_items'      => $this->get_contract_line_items( $memberships_due[ $user_id ] ),
+				);
+				do_action( 'dojo_membership_upcoming_payment_due', $info );
 			} elseif ( strtotime( $account->last_payment_event ) < $month_start and $day >= $account->billing_day ) {
 				// if updates didn't run so these run back to back the elseif will at least separate them by
 				// an update interval (currently one hour)
@@ -825,7 +831,13 @@ Membership: ' . $student->contract->title . '
 					'last_payment_event'   => $this->time( 'mysql' )
 				) );
 				$this->log_event( 'Payment due', $user_id );
-				do_action( 'dojo_membership_payment_due', $memberships_due[ $user_id ] );
+
+				$info = array(
+					'user_id'         => $user_id,
+					'memberships_due' => $memberships_due[ $user_id ],
+					'line_items'      => $this->get_contract_line_items( $memberships_due[ $user_id ] ),
+				);
+				do_action( 'dojo_membership_payment_due', $info );
 			}
 		}
 
@@ -1511,40 +1523,38 @@ Membership: ' . $student->contract->title . '
 	}
 
 	/**
-	 * Sorts students by contract price in decending order. Student records in response
+	 * Sorts students by contract price in descending order. Student records in response
 	 * will include contract and applicable contract_price based on sort order
 	 *
-	 * @param int $user_id
+	 * @param int $student_contracts Array( array( family_pricing, student_id ) )
 	 *
 	 * @return array ( student )
 	 */
-	public function sort_student_contracts( $user_id )
+	public function sort_student_contracts( $student_contracts )
 	{
-		$contracts = $this->model()->get_user_contracts( $user_id );
-
 		// parse pricing for each contract
-		foreach ( $contracts as $contract ) {
+		foreach ( $student_contracts as $contract ) {
 			$contract->pricing = new Dojo_Price_Plan( $contract->family_pricing );
 		}
 
 		$results = array();
 		$person = 1;
-		while ( count( $contracts ) > 0 ) {
+		while ( count( $student_contracts ) > 0 ) {
 			$max = null;
-			foreach ( $contracts as $index => $contract ) {
+			foreach ( $student_contracts as $index => $contract ) {
 				$price = $contract->pricing->get_price( $person );
 				if ( null === $max || $price > $max ) {
 					$max = $price;
 					$max_index = $index;
 				}
 			}
-			$contract = $contracts[ $max_index ];
+			$contract = $student_contracts[ $max_index ];
 			$student = $this->model()->get_student( $contract->student_id );
 			$student->contract = $contract;
 			$student->contract_price = $max;
 			$results[] = $student;
 			$person ++;
-			unset( $contracts[ $max_index] );
+			unset( $student_contracts[ $max_index] );
 		}
 		return $results;
 	}
@@ -1557,7 +1567,8 @@ Membership: ' . $student->contract->title . '
 	 * @return array Line items
 	 */
 	public function get_new_contract_line_items( $user_id ) {
-		$students = $this->sort_student_contracts( $user_id );
+		$contracts = $this->model()->get_user_contracts( $user_id );
+		$students = $this->sort_student_contracts( $contracts );
 		$line_items = array();
 		foreach ( $students as $student ) {
 			// if status not yet paid
@@ -1574,6 +1585,29 @@ Membership: ' . $student->contract->title . '
 					'amount_cents'      => (int) ( $student->contract_price * 100 ),
 				);
 			}
+		}
+
+		return $line_items;
+	}
+
+	/**
+	 * Get line items for given contracts. Requires family_pricing, student_id, membership_id, membership_status and title on each record.
+	 *
+	 * @param $contracts
+	 *
+	 * @return array
+	 */
+	public function get_contract_line_items( $contracts ) {
+		$students = $this->sort_student_contracts( $contracts );
+		$line_items = array();
+		foreach ( $students as $student ) {
+			$line_items[] = array(
+				'student_id'        => $student->ID,
+				'membership_id'     => $student->contract->membership_id,
+				'membership_status' => $student->contract->membership_status,
+				'description'       => $student->first_name . ' ' . $student->last_name . ' - ' . $student->contract->title,
+				'amount_cents'      => (int) ( $student->contract_price * 100 ),
+			);
 		}
 
 		return $line_items;

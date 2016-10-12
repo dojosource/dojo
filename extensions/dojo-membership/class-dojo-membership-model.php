@@ -156,9 +156,11 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
 		$month_start = $this->date( 'Y-m-d 00:00:00', strtotime( $month . '/1/' . $year ) );
 		$month_end = $this->date( 'Y-m-d 00:00:00', strtotime( $next_month . '/1/' . $next_month_year ) );
 
-		$sql = $wpdb->prepare( "SELECT a.*, m.*, m.ID as membership_id FROM $this->accounts a
+		$sql = $wpdb->prepare( "SELECT a.*, m.*, m.ID as membership_id, m.status as membership_status, c.family_pricing, c.title
+			FROM $this->accounts a
 			INNER JOIN $this->students s ON a.user_id = s.user_id
 			INNER JOIN $this->memberships m ON s.current_membership_id = m.ID
+			INNER JOIN $this->contracts c ON m.contract_id = c.ID
 			WHERE %d >= a.billing_day - 1
 			AND m.next_due_date < %s
 			AND m.status IN( 'active', 'due', 'canceled', 'canceled-due' )

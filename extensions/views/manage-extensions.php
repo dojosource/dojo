@@ -42,7 +42,9 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 <?php foreach ( $installed_extensions as $extension_id => $extension ) : ?>
 <div class="dojo-extension-block" data-extension="<?php echo esc_attr( $extension_id ) ?>">
 	<div class="dojo-large-icon dojo-left">
+		<?php if ( isset( $info['icons'][ $extension_id ] ) ) : ?>
 		<span class="dashicons dashicons-<?php echo $info['icons'][ $extension_id ] ?>"></span>
+		<?php endif; ?>
 	</div>
 	<div class="dojo-left">
 		<div class="dojo-extension-title">
@@ -72,7 +74,7 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 			<a href="javascript:;" class="dojo-remove dojo-red-link">Remove</a>
 			<div style="display:none;">Removing... <img src="/wp-admin/images/spinner.gif"></div>
 		</div>
-		<?php if ( $info['versions'][ $extension_id ] != $extension->version() ) : ?>
+		<?php if ( isset( $info['versions'][ $extension_id ] ) && $info['versions'][ $extension_id ] != $extension->version() ) : ?>
 		<div>
 			<a href="javascript:;" class="button button-primary dojo-update">Update Now</a>
 			<div style="display:none;">Installing... <img src="/wp-admin/images/spinner.gif"></div>

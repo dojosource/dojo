@@ -10,8 +10,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 	private $extensions = array();
 	private $active_extensions = array();
-	private $disabled_extensions = array();
-	private $core_extensions;
+	private $core_extensions = array();
 
 	private function __construct() {
 		$this->register_action_handlers( array (
@@ -21,8 +20,6 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		$this->register_filters( array (
 			'pre_set_site_transient_update_plugins',
 		) );
-
-		$settings = Dojo_Settings::instance();
 
 		// core list of extensions will always be enabled
 		if ( ! defined( 'DOJO_NO_CORE' ) || ! DOJO_NO_CORE ) {
@@ -49,11 +46,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 			Dojo_Loader::add_extension( $class );
 
 			// if this is a core extension or enabled extension add it to the active extension list
-			if ( isset( $this->core_extensions[ $class ] ) || $settings->get( 'enable_extension_' . $class ) ) {
-				$this->active_extensions[ $class ] = $class;
-			} else {
-				$this->disabled_extensions[ $class ] = $class;
-			}
+			$this->active_extensions[ $class ] = $class;
 		}
 
 		// load active extensions
@@ -85,15 +78,6 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	 */
 	public function active_extensions() {
 		return $this->active_extensions;
-	}
-
-	/**
-	 * Get list of disabled extensions
-	 *
-	 * @return array(string)
-	 */
-	public function disabled_extensions() {
-		return $this->disabled_extensions;
 	}
 
 	/**
@@ -156,7 +140,6 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 				if ( $response instanceof WP_Error ) {
 					return;
 				}
-				$settings = Dojo_Settings::instance();
 
 				// make sure extensions that are supposed to be there are installed
 				// they will have been nuked after a plugin update
@@ -177,8 +160,6 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	/**** Filters ****/
 
 	public function filter_pre_set_site_transient_update_plugins( $value ) {
-
-		$settings = Dojo_Settings::instance();
 
 		// inject a check for dojo core updates
 		$response = $this->call_dojosource( 'get_extension_info' );
@@ -340,9 +321,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 			return 'Error: ' . esc_html( $result->get_error_message() );
 		}
 
-		$settings = Dojo_Settings::instance();
 		$class = 'Dojo_' . ucfirst( $extension );
-		$settings->set( 'enable_extension_' . $class, true );
 
 		return 'process_success';
 	}
@@ -358,10 +337,6 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 		// remove files
 		$this->remove_folder( plugin_dir_path( __FILE__ ) . 'dojo-' . $extension );
-
-		// setting this false will prevent autoloading on core plugin update
-		$settings = Dojo_Settings::instance();
-		$settings->set( 'enable_extension_' . $class, false );
 
 		return 'process_success';
 	}
