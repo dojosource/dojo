@@ -81,6 +81,22 @@ final class Dojo extends Dojo_WP_Base {
 	/**** Utility ****/
 
 	/**
+	 * Get dojo plugin version
+	 *
+	 * @return string | null
+	 */
+	public function version() {
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$info = get_plugin_data( WP_PLUGIN_DIR . '/dojo/dojo.php' );
+		if ( is_array( $info ) && isset( $info['Version'] ) ) {
+			return $info['Version'];
+		}
+		return null;
+	}
+
+	/**
 	 * Get model instance for plugin
 	 *
 	 * @return object

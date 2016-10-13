@@ -161,18 +161,26 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 	public function filter_pre_set_site_transient_update_plugins( $value ) {
 
+		// don't bother if we don't have a key
+		$settings = Dojo_Settings::instance();
+		if ( '' == $settings->get( 'site_key' ) ) {
+			return $value;
+		}
+
 		// inject a check for dojo core updates
 		$response = $this->call_dojosource( 'get_extension_info' );
 
 		if ( ! ( $response instanceof WP_Error ) ) {
-			$release = new stdClass();
-			$release->package = 'https://s3.amazonaws.com/dojosource/release/dojo.zip';
-			$release->slug = 'dojo';
-			$release->plugin = 'dojo/dojo.php';
-			$release->new_version = $response['versions']['core'];
-			$release->url = 'https://dojosource.com';
+			if ( $response['versions']['core'] != Dojo::instance()->version() ) {
+				$release = new stdClass();
+				$release->package = 'https://s3.amazonaws.com/dojosource/release/dojo.zip';
+				$release->slug = 'dojo';
+				$release->plugin = 'dojo/dojo.php';
+				$release->new_version = $response['versions']['core'];
+				$release->url = 'https://dojosource.com';
 
-			$value->response['dojo/dojo.php'] = $release;
+				$value->response['dojo/dojo.php'] = $release;
+			}
 		}
 
 		return $value;
