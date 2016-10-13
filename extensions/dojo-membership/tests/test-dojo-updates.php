@@ -197,10 +197,10 @@ class Test_Dojo_Updates extends WP_UnitTestCase {
 		// verify there is only one membership in the updates
 		do_action( 'dojo_update' );
 		$this->assertTrue( isset( $stub->handled_events['dojo_membership_upcoming_payment_due'] ) );
-		$this->assertEquals( 1, count( $stub->handled_events['dojo_membership_upcoming_payment_due'] ) );
+		$this->assertEquals( 1, count( $stub->handled_events['dojo_membership_upcoming_payment_due']['memberships_due'] ) );
 		do_action( 'dojo_update' );
 		$this->assertTrue( isset( $stub->handled_events['dojo_membership_payment_due'] ) );
-		$this->assertEquals( 1, count( $stub->handled_events['dojo_membership_payment_due'] ) );
+		$this->assertEquals( 1, count( $stub->handled_events['dojo_membership_payment_due']['memberships_due'] ) );
 		$stub->handled_events = array();
 
 		// move to next month billing day
@@ -209,10 +209,10 @@ class Test_Dojo_Updates extends WP_UnitTestCase {
 		// verify there are two memberships in the updates
 		do_action( 'dojo_update' );
 		$this->assertTrue( isset( $stub->handled_events['dojo_membership_upcoming_payment_due'] ) );
-		$this->assertEquals( 2, count( $stub->handled_events['dojo_membership_upcoming_payment_due'] ) );
+		$this->assertEquals( 2, count( $stub->handled_events['dojo_membership_upcoming_payment_due']['memberships_due'] ) );
 		do_action( 'dojo_update' );
 		$this->assertTrue( isset( $stub->handled_events['dojo_membership_payment_due'] ) );
-		$this->assertEquals( 2, count( $stub->handled_events['dojo_membership_payment_due'] ) );
+		$this->assertEquals( 2, count( $stub->handled_events['dojo_membership_payment_due']['memberships_due'] ) );
 		$stub->handled_events = array();
 
 		// move to end of first membership
@@ -448,12 +448,12 @@ class Stub_Dojo_Updates {
 		add_action( 'dojo_membership_ended', array( $this, 'handle_dojo_membership_ended' ) );
 	}
 
-	public function handle_dojo_membership_upcoming_payment_due( $memberships_due ) {
-		$this->handled_events['dojo_membership_upcoming_payment_due'] = $memberships_due;
+	public function handle_dojo_membership_upcoming_payment_due( $info ) {
+		$this->handled_events['dojo_membership_upcoming_payment_due'] = $info;
 	}
 
-	public function handle_dojo_membership_payment_due( $memberships_due ) {
-		$this->handled_events['dojo_membership_payment_due'] = $memberships_due;
+	public function handle_dojo_membership_payment_due( $info ) {
+		$this->handled_events['dojo_membership_payment_due'] = $info;
 	}
 
 	public function handle_dojo_membership_cancel_requested( $membership_id ) {

@@ -279,8 +279,7 @@ final class Dojo extends Dojo_WP_Base {
 		if ( ! $key_set ) {
 			$adon_subtitle = '
 			<div class="dojo-info" style="font-size:16px">
-				Register at <a href="https://dojosource.com" target="_blank">dojosource.com</a> for Pro Add-Ons.<br /><br />
-				Online Payments, Events and more!
+				Register at <a href="https://dojosource.com" target="_blank">dojosource.com</a> for Add-Ons.
 			</div>
 			<div style="border:1px solid #aaa;margin:10px 0;padding:10px;max-width:340px;">
 				<div class="dojo-large-icon dojo-left">
@@ -476,39 +475,6 @@ final class Dojo extends Dojo_WP_Base {
 
 	public function render_option_manage_extensions() {
 		include 'views/manage-extensions.php';
-
-		/*
-		$settings = Dojo_Settings::instance();
-		$extensions = Dojo_Extension_Manager::instance()->extensions();
-		$core_extensions = Dojo_Extension_Manager::instance()->core_extensions();
-		$available_extensions = array();
-
-		foreach ( $extensions as $extension_class ) {
-			if ( isset( $core_extensions[ $extension_class ] ) ) {
-				// no configuration necessary for core extensions, they are always enabled
-				continue;
-			}
-			$available_extensions[] = $extension_class;
-		}
-
-		if ( 0 == count( $available_extensions ) ) {
-			?>
-			<div class="dojo-warn">No add-ons installed.</div>
-			<?php
-		} else {
-			foreach ( $available_extensions as $extension_class ) {
-				$instance = $this->get_instance( $extension_class );
-				?>
-				<p>
-					<label for="enable_<?php echo $extension_class ?>">
-						<input type="checkbox" id="enable_<?php echo $extension_class ?>" name="dojo_options[enable_extension_<?php echo $extension_class ?>]" value="1" <?php checked( $settings->get( 'enable_extension_' . $extension_class ), '1' ) ?> />
-						<?php echo $instance->title() ?>
-					</label>
-				</p>
-				<?php
-			}
-		}
-		*/
 	}
 }
 
