@@ -398,31 +398,29 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-documents' ) );
 	}
 
-	public function api_save_student( $is_admin ) {
+	public function api_save_student( $is_logged_in ) {
+		if ( ! $is_logged_in ) {
+			return 'Access denied';
+		}
 		$user = wp_get_current_user();
 
-		if ( $is_admin ) {
-			// make sure user has access to be acting as admin
-			$this->require_admin();
-		}
-
 		if ( isset( $_POST['student_id'] ) ) {
-			if ( $is_admin || $this->model()->is_user_student( $user->ID, $_POST['student_id'] ) ) {
-				$this->model()->update_student( $_POST['student_id'], $_POST );
-				foreach ( $_POST as $key => $value ) {
-					if ( 0 === strpos( $key, 'rank_type_' ) ) {
-						$rank_type_id = substr( $key, 10 );
-						$this->model()->set_student_rank( $_POST['student_id'], $rank_type_id, $value );
-					}
+			if ( ! $this->model()->is_user_student( $user->ID, $_POST['student_id'] ) ) {
+				// student doesn't belong to current user so require admin privs
+				$this->require_admin();
+			}
+			$this->model()->update_student( $_POST['student_id'], $_POST );
+			foreach ( $_POST as $key => $value ) {
+				if ( 0 === strpos( $key, 'rank_type_' ) ) {
+					$rank_type_id = substr( $key, 10 );
+					$this->model()->set_student_rank( $_POST['student_id'], $rank_type_id, $value );
 				}
-			} else {
-				echo 'Invalid id';
 			}
 		} else {
 			$this->model()->create_student( $user->ID, $_POST );
 		}
 
-		if ( $is_admin && isset( $_POST['is_admin'] ) ) {
+		if ( $is_logged_in && isset( $_POST['is_admin'] ) ) {
 			wp_redirect( admin_url( 'admin.php?page=dojo-students' ) );
 		} else {
 			wp_redirect( $this->membership_url( 'students' ) );

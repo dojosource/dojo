@@ -229,21 +229,21 @@ final class Dojo extends Dojo_WP_Base {
 	 * Ajax handling uses two get parameters for routing to a method on an object.
 	 * Get parameter, "target" will be prefixed with Dojo_ to resolve to a dojo class.
 	 * Get parameter, "method" will be prefixed with api_ to resolve to a method on that class.
-	 * A bool flag is passed to the method to indicate admin privs.
+	 * A bool flag is passed to the method to indicate user is logged in.
 	 * If the method returns a string the string will be echoed out in the response.
 	 * If the method returns an array or object it will be converted to JSON and echoed.
 	 *
 	 * See Dojo_Extension::ajax for example of generating ajax urls
 	 */
 	public function handle_wp_ajax_dojo( $arg ) {
-		$is_admin = 'nopriv' !== $arg;
+		$is_logged_in = 'nopriv' !== $arg;
 		if ( isset( $_GET['target'] ) && isset( $_GET['method'] ) ) {
 			$target = 'Dojo_' . $_GET['target'];
 			if ( class_exists( $target ) ) {
 				$method = 'api_' . $_GET['method'];
 				$instance = $this->get_instance( $target );
 				if ( method_exists( $instance, $method ) ) {
-					$result = call_user_func( array( $instance, $method ), $is_admin );
+					$result = call_user_func( array( $instance, $method ), $is_logged_in );
 					if ( is_string( $result ) ) {
 						echo $result;
 					} elseif ( is_array( $result ) || is_object( $result ) ) {
@@ -258,7 +258,7 @@ final class Dojo extends Dojo_WP_Base {
 			// target is this main dojo class
 			$method = 'api_' . $_GET['method'];
 			if ( method_exists( $this, $method ) ) {
-				$result = call_user_func( array( $this, $method ), $is_admin );
+				$result = call_user_func( array( $this, $method ), $is_logged_in );
 				if ( is_string( $result ) ) {
 					echo $result;
 				} elseif ( is_array( $result ) || is_object( $result ) ) {
