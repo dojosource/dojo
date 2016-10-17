@@ -300,7 +300,7 @@ class Test_Dojo_Updates extends WP_UnitTestCase {
 		$_POST['membership_id'] = $membership->ID;
 
 		// request cancellation
-		$dojo_membership->api_cancel_membership( false );
+		$dojo_membership->ajax_cancel_membership( false );
 
 		// verify cancellation request occurred
 		$this->assertTrue( isset( $stub->handled_events['dojo_membership_cancel_requested'] ) );
@@ -383,7 +383,7 @@ class Test_Dojo_Updates extends WP_UnitTestCase {
 		$_POST['membership_id'] = $membership->ID;
 
 		// request cancellation
-		$dojo_membership->api_cancel_membership( false );
+		$dojo_membership->ajax_cancel_membership( false );
 
 		// verify cancellation request occurred
 		$this->assertTrue( isset( $stub->handled_events['dojo_membership_cancel_requested'] ) );

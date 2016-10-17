@@ -28,9 +28,9 @@ class Dojo_WP_Base {
 
 	/**
 	 * Gets ajax url for routing a call to the given method on this object.
-	 * The given method name will be prefixed with api_ when the callback is routed.
+	 * The given method name will be prefixed with ajax_ when the callback is routed.
 	 *
-	 * @param string $method Name of method to call without api_ prefix.
+	 * @param string $method Name of method to call without ajax_ prefix.
 	 *
 	 * @return string
 	 */

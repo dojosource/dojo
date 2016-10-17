@@ -106,7 +106,7 @@ class Dojo_Membership extends Dojo_Extension {
 
 	/**** Ajax Endpoints ****/
 
-	public function api_force_update() {
+	public function ajax_force_update() {
 		$this->require_admin();
 
 		do_action( 'dojo_update' );
@@ -114,7 +114,7 @@ class Dojo_Membership extends Dojo_Extension {
 		return 'Updates complete';
 	}
 
-	public function api_signup() {
+	public function ajax_signup() {
 		if ( '1' != $this->get_setting( 'membership_enable_username' ) ) {
 			$_POST['username'] = $_POST['email'];
 		}
@@ -170,7 +170,7 @@ Phone: '.$_POST['phone']
 		}
 	}
 
-	public function api_check_coupon() {
+	public function ajax_check_coupon() {
 		$coupon = strtolower( $_POST['coupon'] );
 
 		$response = array( 'result' => 'invalid' );
@@ -186,13 +186,13 @@ Phone: '.$_POST['phone']
 		echo json_encode($response);
 	}
 
-	public function api_get_charge_date() {
+	public function ajax_get_charge_date() {
 		$day = (int) $_POST['charge-day'];
 		$chargeDate = $this->get_charge_date( $day );
 		echo 'After today\'s payment, automatic payments will begin <strong>' . $this->date( 'm/d/Y', $chargeDate ) . '</strong>.';
 	}
 
-	public function api_new_program() {
+	public function ajax_new_program() {
 		$this->require_admin();
 
 		$program_id = $this->model()->create_program( $_POST );
@@ -200,7 +200,7 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-programs' ) );
 	}
 
-	public function api_save_program() {
+	public function ajax_save_program() {
 		$this->require_admin();
 
 		if ( isset( $_POST['program_id'] ) ) {
@@ -209,7 +209,7 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-programs' ) );
 	}
 
-	public function api_delete_program() {
+	public function ajax_delete_program() {
 		$this->require_admin();
 
 		if ( isset( $_POST['program_id'] ) ) {
@@ -218,7 +218,7 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-programs' ) );
 	}
 
-	public function api_new_rank_type() {
+	public function ajax_new_rank_type() {
 		$this->require_admin();
 
 		$this->model()->create_rank_type( $_POST );
@@ -226,7 +226,7 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-ranks' ) );
 	}
 
-	public function api_save_rank_type() {
+	public function ajax_save_rank_type() {
 		$this->require_admin();
 
 		if ( ! isset( $_POST['rank_type_id'] ) ) {
@@ -253,7 +253,7 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-ranks' ) );
 	}
 
-	public function api_delete_rank_type() {
+	public function ajax_delete_rank_type() {
 		$this->require_admin();
 
 		if ( isset( $_POST['rank_type_id'] ) ) {
@@ -262,7 +262,7 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-ranks' ) );
 	}
 
-	public function api_save_contract() {
+	public function ajax_save_contract() {
 		$this->require_admin();
 
 		$_POST['new_memberships_only']          = 'new' == $_POST['membership_restriction'] ? 1 : 0;
@@ -297,7 +297,7 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-contracts' ) );
 	}
 
-	public function api_delete_rank() {
+	public function ajax_delete_rank() {
 		$this->require_admin();
 
 		if ( isset( $_POST['rank_id'] ) ) {
@@ -306,7 +306,7 @@ Phone: '.$_POST['phone']
 		return 'success';
 	}
 
-	public function api_delete_contract() {
+	public function ajax_delete_contract() {
 		$this->require_admin();
 
 		if ( isset( $_POST['contract_id'] ) ) {
@@ -315,7 +315,7 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-contracts' ) );
 	}
 
-	public function api_save_document() {
+	public function ajax_save_document() {
 		$this->require_admin();
 
 		if ( empty( $_POST ) ) {
@@ -381,7 +381,7 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-documents' ) );
 	}
 
-	public function api_delete_document() {
+	public function ajax_delete_document() {
 		$this->require_admin();
 
 		if ( isset( $_POST['document_id'] ) ) {
@@ -398,7 +398,7 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-documents' ) );
 	}
 
-	public function api_save_student( $is_logged_in ) {
+	public function ajax_save_student( $is_logged_in ) {
 		if ( ! $is_logged_in ) {
 			return 'Access denied';
 		}
@@ -427,7 +427,7 @@ Phone: '.$_POST['phone']
 		}
 	}
 
-	public function api_delete_student() {
+	public function ajax_delete_student() {
 		$user = wp_get_current_user();
 
 		if ( isset( $_POST['student_id'] ) ) {
@@ -445,7 +445,7 @@ Phone: '.$_POST['phone']
 	/**
 	 * Called every time the drop down select changes on a student to save state and update line items
 	 */
-	public function api_save_enrollment() {
+	public function ajax_save_enrollment() {
 		$user = wp_get_current_user();
 
 		if ( ! isset( $_POST['refresh_only'] ) ) {
@@ -488,7 +488,7 @@ Phone: '.$_POST['phone']
 	/**
 	 * Called to start enrollment process. Will move student memberships with selected contracts to pending state.
 	 */
-	public function api_enrollment_start() {
+	public function ajax_enrollment_start() {
 		$user = wp_get_current_user();
 
 		// apply membership selection
@@ -539,7 +539,7 @@ Phone: '.$_POST['phone']
 	/**
 	 * Called to submit enrollment. Will move student memberships from pending to submitted state.
 	 */
-	public function api_submit_application() {
+	public function ajax_submit_application() {
 		$user = wp_get_current_user();
 
 		$students = array();
@@ -606,7 +606,7 @@ Membership: ' . $student->contract->title . '
 		wp_redirect( $url );
 	}
 
-	public function api_cancel_membership() {
+	public function ajax_cancel_membership() {
 		$user = wp_get_current_user();
 
 		$membership = $this->model()->get_membership( $_POST['membership_id'] );
@@ -645,7 +645,7 @@ Membership: ' . $student->contract->title . '
 		return 'success';
 	}
 
-	public function api_record_payment_received() {
+	public function ajax_record_payment_received() {
 		$this->require_admin();
 
 		$membership = $this->model()->get_student_membership( $_POST['student'] );
@@ -658,7 +658,7 @@ Membership: ' . $student->contract->title . '
 		return 'success';
 	}
 
-	public function api_approve_application() {
+	public function ajax_approve_application() {
 		$this->require_admin();
 
 		$membership = $this->model()->get_student_membership( $_POST['student'] );
@@ -693,7 +693,7 @@ Membership: ' . $student->contract->title . '
 		return 'success';
 	}
 
-	public function api_save_billing_options() {
+	public function ajax_save_billing_options() {
 		$user = wp_get_current_user();
 
 		$this->set_user_billing_day( $user->ID, (int) $_POST['billing_day'] );

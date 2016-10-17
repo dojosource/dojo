@@ -236,7 +236,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 	/**** Ajax Handlers ****/
 
-	public function api_get_management_view() {
+	public function ajax_get_management_view() {
 		if ( ! current_user_can( 'update_plugins' ) ) {
 			return 'Access denied';
 		}
@@ -252,7 +252,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		return ob_get_clean();
 	}
 
-	public function api_install_extension() {
+	public function ajax_install_extension() {
 		if ( ! current_user_can( 'update_plugins' ) ) {
 			return 'Access denied';
 		}
@@ -266,12 +266,12 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		return $this->install_extension( $extension );
 	}
 
-	public function api_update_extension() {
+	public function ajax_update_extension() {
 		// for now, same thing
-		$this->api_install_extension();
+		$this->ajax_install_extension();
 	}
 
-	public function api_remove_extension() {
+	public function ajax_remove_extension() {
 		if ( ! current_user_can( 'update_plugins' ) ) {
 			return 'Access denied';
 		}
