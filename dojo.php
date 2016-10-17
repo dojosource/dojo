@@ -6,7 +6,7 @@ Description: Manage and grow your martial arts school with easy to use tools for
 Author: Dojo Source
 Text Domain: dojo
 License: GPLv2 or later
-Version: 1.0
+Version: 0.1
 */
 
 /*
