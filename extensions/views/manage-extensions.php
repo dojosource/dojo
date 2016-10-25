@@ -76,9 +76,9 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 			v<?php echo esc_html( $extension->version() ) ?>
 		</div>
 		<?php if ( isset( $info['versions'][ $extension_id ] ) && $info['versions'][ $extension_id ] != $extension->version() ) : ?>
-		<div>
+		<div style="margin:5px 0;">
 			<a href="javascript:;" class="button button-primary dojo-update">Update Now</a>
-			<div style="display:none;">Installing... <img src="/wp-admin/images/spinner.gif"></div>
+			<div style="display:none;">Updating... <img src="/wp-admin/images/spinner.gif"></div>
 		</div>
 		<?php endif; ?>
 		<div style="text-align:right;margin-bottom:5px;">
@@ -131,7 +131,7 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 	</div>
 	<div class="dojo-right">
 		<a href="javascript:;" class="button dojo-install">Download</a>
-		<div style="display:none;">Downloading... <img src="/wp-admin/images/spinner.gif"></div>
+		<div style="display:none;">...<img src="/wp-admin/images/spinner.gif"></div>
 	</div>
 	<div class="dojo-clear"></div>
 	<div class="dojo-extension-info">
