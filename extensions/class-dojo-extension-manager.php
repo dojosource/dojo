@@ -299,6 +299,20 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		return $this->install_extension( $extension );
 	}
 
+	public function ajax_activate_extension() {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return 'Access denied';
+		}
+
+		if ( ! class_exists( 'WP_Upgrader' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		}
+
+		$extension = $_POST['extension'];
+
+		return $this->activate_extension( $extension );
+	}
+
 	public function ajax_update_extension() {
 		// for now, same thing
 		$this->ajax_install_extension();
@@ -323,7 +337,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	/**** Utility ****/
 
 	public function extension_plugin_exists( $extension ) {
-		return file_exists( dirname( Dojo_Loader::plugin_path() . '/dojo-' . $extension ) );
+		return file_exists( dirname( Dojo_Loader::plugin_path() ) . '/dojo-' . $extension );
 	}
 
 	private function remove_folder( $path ) {
@@ -367,6 +381,17 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		}
 
 		$class = 'Dojo_' . ucfirst( $extension );
+
+		return 'process_success';
+	}
+
+	private function activate_extension( $extension ) {
+		$plugin = 'dojo-' . $extension . '/dojo-' . $extension . '.php';
+		$result = activate_plugin( $plugin, self_admin_url('plugins.php?error=true&plugin=' . $plugin), is_network_admin() );
+
+		if ( is_wp_error( $result ) ) {
+			return 'Error: ' . esc_html( $result->get_error_message() );
+		}
 
 		return 'process_success';
 	}

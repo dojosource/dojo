@@ -106,7 +106,8 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 		</div>
 	</div>
 	<div class="dojo-right">
-		<a href="<?php echo wp_nonce_url( 'plugins.php?action=activate&amp;plugin=' . $plugin_file . '&amp;plugin_status=all&amp;paged=1' ) ?>" class="button button-primary dojo-install">Activate</a>
+		<a href="javascript:;" class="button button-primary dojo-activate">Activate</a>
+		<div style="display:none;">Activate... <img src="/wp-admin/images/spinner.gif"></div>
 	</div>
 	<div class="dojo-clear"></div>
 	<div class="dojo-extension-info">
@@ -129,8 +130,8 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 		</div>
 	</div>
 	<div class="dojo-right">
-		<a href="javascript:;" class="button button-primary dojo-install">Install Now</a>
-		<div style="display:none;">Installing... <img src="/wp-admin/images/spinner.gif"></div>
+		<a href="javascript:;" class="button dojo-install">Download</a>
+		<div style="display:none;">Downloading... <img src="/wp-admin/images/spinner.gif"></div>
 	</div>
 	<div class="dojo-clear"></div>
 	<div class="dojo-extension-info">
@@ -169,6 +170,10 @@ jQuery(function($) {
 
 	$('.dojo-update').click(function() {
 		doAction('update_extension', $(this));
+	});
+
+	$('.dojo-activate').click(function() {
+		doAction('activate_extension', $(this));
 	});
 
 	$('.dojo-remove').click(function() {
