@@ -770,6 +770,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
 		$insert_params = $this->filter_params( $params, array(
 			'is_active',
 			'term_months',
+			'terms_url',
 			'title',
 			'new_memberships_only',
 			'continuing_memberships_only',
