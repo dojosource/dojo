@@ -322,6 +322,10 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 	/**** Utility ****/
 
+	public function extension_exists( $extension ) {
+		return file_exists( dirname( Dojo_Loader::plugin_path() . '/dojo-' . $extension ) );
+	}
+
 	private function remove_folder( $path ) {
 		$files = array_diff( scandir( $path ), array( '.', '..' ) );
 		foreach ( $files as $file ) {

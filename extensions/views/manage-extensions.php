@@ -18,9 +18,14 @@ foreach ( $extensions as $extension_class ) {
 }
 
 $available_extensions = array();
+$deactivated_extensions = array();
 foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 	if ( ! isset( $installed_extensions[ $extension_id ] ) ) {
-		$available_extensions[ $extension_id ] = $extension_title;
+		if ( $this->extension_plugin_exists( $extension_id ) ) {
+			$deactivated_extensions[ $extension_id ] = $extension_title;
+		} else {
+			$available_extensions[ $extension_id ] = $extension_title;
+		}
 	}
 }
 
@@ -82,6 +87,31 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 		<?php endif; ?>
 	</div>
 	<div class="dojo-clear"></div>
+</div>
+<?php endforeach; ?>
+
+<?php foreach ( $deactivated_extensions as $extension_id => $extension_title ) : ?>
+<?php $plugin_file = 'dojo-' . $extension_id . '/dojo-' . $extension_id . '.php'; ?>
+
+<div class="dojo-extension-block" data-extension="<?php echo esc_attr( $extension_id ) ?>">
+	<div class="dojo-large-icon dojo-left">
+		<span class="dashicons dashicons-<?php echo $info['icons'][ $extension_id ] ?>"></span>
+	</div>
+	<div class="dojo-left">
+		<div class="dojo-extension-title">
+			<?php echo esc_html( $extension_title ) ?>
+		</div>
+		<div>
+			Ready to Activate
+		</div>
+	</div>
+	<div class="dojo-right">
+		<a href="<?php echo wp_nonce_url( 'plugins.php?action=activate&amp;plugin=' . $plugin_file . '&amp;plugin_status=all&amp;paged=1' ) ?>" class="button button-primary dojo-install">Activate</a>
+	</div>
+	<div class="dojo-clear"></div>
+	<div class="dojo-extension-info">
+		<?php echo esc_html( $info['descriptions'][ $extension_id ] ) ?>
+	</div>
 </div>
 <?php endforeach; ?>
 
