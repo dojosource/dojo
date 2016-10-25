@@ -9,11 +9,13 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	private static $instance;
 
 	private $extensions = array();
+	private $plugin_extensions = array();
 	private $active_extensions = array();
 	private $core_extensions = array();
 
 	private function __construct() {
 		$this->register_action_handlers( array (
+			array( 'plugins_loaded', 1, 0 ),
 			array( 'upgrader_process_complete', 10, 2 ),
 		) );
 
@@ -28,8 +30,16 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 			);
 		}
 
-		// sort out extensions
-		$dirs = glob( plugin_dir_path( __FILE__ ) . 'dojo-*', GLOB_ONLYDIR );
+		$this->find_extensions( plugin_dir_path( __FILE__ ) );
+
+		// load active extensions
+		foreach ( $this->active_extensions as $extension_class ) {
+			$this->get_instance( $extension_class );
+		}
+	}
+
+	private function find_extensions( $path, $loader_path = null ) {
+		$dirs = glob( $path . 'dojo-*', GLOB_ONLYDIR );
 		foreach ( $dirs as $dir ) {
 			// get extension directories and convert to class names
 			$extension = basename( $dir );
@@ -41,17 +51,22 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 				$class .= ucfirst( $part );
 			}
 			$this->extensions[ $class ] = $class;
+			$this->active_extensions[ $class ] = $class;
 
 			// tell auto loader about this extension class
-			Dojo_Loader::add_extension( $class );
-
-			// if this is a core extension or enabled extension add it to the active extension list
-			$this->active_extensions[ $class ] = $class;
+			Dojo_Loader::add_extension( $class, $loader_path );
 		}
+	}
 
-		// load active extensions
-		foreach ( $this->active_extensions as $extension_class ) {
-			$this->get_instance( $extension_class );
+	private function include_plugin_extension( $name ) {
+		$root_path = Dojo_Loader::plugin_path() . '/';
+		$path = $root_path . 'dojo-' . $name . '/';
+		$class = 'Dojo_' . ucfirst( $name );
+		if ( file_exists( $path . 'dojo-' . $name . '.php' ) ) {
+			$this->plugin_extensions[ $class ] = $class;
+			$this->active_extensions[ $class ] = $class;
+			Dojo_Loader::add_extension( $class, '/../dojo-' . $name . '/' );
+			$this->get_instance( $class );
 		}
 	}
 
@@ -69,6 +84,15 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	 */
 	public function extensions() {
 		return $this->extensions;
+	}
+
+	/**
+	 * Get list of all plugin extensions
+	 *
+	 * @return array(string)
+	 */
+	public function plugin_extensions() {
+		return $this->plugin_extensions;
 	}
 
 	/**
@@ -127,6 +151,15 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 
 	/**** Action Handlers ****/
+
+	public function handle_plugins_loaded() {
+
+		// get plugin extensions
+		$plugin_extensions = apply_filters( 'dojo_register_extensions', array() );
+		foreach ( $plugin_extensions as $name ) {
+			$this->include_plugin_extension( $name );
+		}
+	}
 
 	public function handle_upgrader_process_complete( $upgrader, $extra ) {
 		// if this is the plugin upgrader at work
@@ -307,7 +340,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		}
 
 		// clear the destination
-		$destination = plugin_dir_path( __FILE__ ) . 'dojo-' . $extension;
+		$destination = Dojo_Loader::plugin_path() . '/dojo-' . $extension;
 		$this->remove_folder( $destination );
 
 		// use built-in upgrader
@@ -344,7 +377,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		$this->get_instance( $class . '_Installer' )->uninstall();
 
 		// remove files
-		$this->remove_folder( plugin_dir_path( __FILE__ ) . 'dojo-' . $extension );
+		$this->remove_folder( Dojo_Loader::plugin_path() . '/dojo-' . $extension );
 
 		return 'process_success';
 	}

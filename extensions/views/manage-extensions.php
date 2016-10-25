@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { die(); }
 $info = $this->extension_info;
 
 $settings = Dojo_Settings::instance();
-$extensions = $this->extensions();
+$extensions = array_merge( $this->extensions(), $this->plugin_extensions() );
 $core_extensions = $this->core_extensions();
 $installed_extensions = array();
 
