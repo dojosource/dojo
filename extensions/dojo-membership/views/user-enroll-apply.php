@@ -74,6 +74,7 @@ $contracts = $this->contracts;
 	</div>
 
 	<button class="submit-application">Submit Application</button>
+	<div class="dojo-please-wait" style="display:none;">Please wait...</div>
 	<?php else : ?>
 	<h2>No Pending Applications</h2>
 	<?php endif; ?>
@@ -89,6 +90,8 @@ jQuery(function($) {
 		}
 		else {
 			$('.error-container').hide();
+			$('.submit-application').hide();
+			$('.dojo-please-wait').show();
 			$('#post').submit();
 		}
 	});

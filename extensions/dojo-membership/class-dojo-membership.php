@@ -598,7 +598,7 @@ Membership: ' . $student->contract->title . '
 			$this->log_event( $message );
 			wp_mail( $adminEmail, 'New Member Application '.$this->time(), $message );
 		} catch ( Exception $ex ) {
-			debug( 'Error sending email ' . $ex->getMessage() );
+			$this->debug( 'Error sending email ' . $ex->getMessage() );
 		}
 
 		// redirect path can be overridden with a filter
