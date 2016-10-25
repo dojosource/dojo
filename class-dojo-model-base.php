@@ -48,6 +48,16 @@ class Dojo_Model_Base extends Dojo_WP_Base {
 	}
 
 	/**
+	 * Fix a single date to be mysql friendly
+	 *
+	 * @param $date
+	 * @return string
+	 */
+	protected function fix_date( $date ) {
+		return $this->date( 'Y-m-d 00:00:00', strtotime( $date ) );
+	}
+
+	/**
 	 * Escapes a string with quotes for direct placement in a query.
 	 * Arrays are comma delimited for direct use in IN statements
 	 * @param string $val

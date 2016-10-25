@@ -55,6 +55,7 @@ class Dojo_Membership extends Dojo_Extension {
 
 
 	/**** Cancellation Policies ****/
+
 	const CANCELLATION_NONE     = 'none';
 	const CANCELLATION_ANYTIME  = 'anytime';
 	const CANCELLATION_DAYS     = 'days';
@@ -805,6 +806,7 @@ Membership: ' . $student->contract->title . '
 					'user_id'         => $user_id,
 					'memberships_due' => $memberships_due[ $user_id ],
 					'line_items'      => $this->get_contract_line_items( $memberships_due[ $user_id ] ),
+					'due_date'        => $month . '/' . $account->billing_day . '/' . $year,
 				);
 				do_action( 'dojo_membership_upcoming_payment_due', $info );
 			} elseif ( strtotime( $account->last_payment_event ) < $month_start and $day >= $account->billing_day ) {
@@ -834,6 +836,7 @@ Membership: ' . $student->contract->title . '
 					'user_id'         => $user_id,
 					'memberships_due' => $memberships_due[ $user_id ],
 					'line_items'      => $this->get_contract_line_items( $memberships_due[ $user_id ] ),
+					'due_date'        => $month . '/' . $account->billing_day . '/' . $year,
 				);
 				do_action( 'dojo_membership_payment_due', $info );
 			}

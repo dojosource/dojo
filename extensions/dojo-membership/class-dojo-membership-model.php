@@ -132,7 +132,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
 	}
 
 	/**
-	 * Get accounts that are ready to issue an upcoming payment event or payment event.
+	 * Get accounts that are ready to issue an upcoming-payment event or payment event.
 	 * Results may have multiple records for each account representing each student membership.
 	 * All account records will be grouped together in the array results.
 	 *
