@@ -59,7 +59,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	}
 
 	private function include_plugin_extension( $name ) {
-		$root_path = Dojo_Loader::plugin_path() . '/';
+		$root_path = dirname( Dojo_Loader::plugin_path() ) . '/';
 		$path = $root_path . 'dojo-' . $name . '/';
 		$class = 'Dojo_' . ucfirst( $name );
 		if ( file_exists( $path . 'dojo-' . $name . '.php' ) ) {
@@ -340,7 +340,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		}
 
 		// clear the destination
-		$destination = Dojo_Loader::plugin_path() . '/dojo-' . $extension;
+		$destination = dirname( Dojo_Loader::plugin_path() ) . '/dojo-' . $extension;
 		$this->remove_folder( $destination );
 
 		// use built-in upgrader
@@ -377,7 +377,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		$this->get_instance( $class . '_Installer' )->uninstall();
 
 		// remove files
-		$this->remove_folder( Dojo_Loader::plugin_path() . '/dojo-' . $extension );
+		$this->remove_folder( dirname( Dojo_Loader::plugin_path() ) . '/dojo-' . $extension );
 
 		return 'process_success';
 	}
