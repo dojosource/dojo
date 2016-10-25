@@ -37,7 +37,7 @@ class Dojo_Loader {
 	 */
 	public static function add_extension( $class, $path = null ) {
 		if ( null === $path ) {
-			$path = '/extensions/' . str_replace( '_', '-', strtolower( $class )) . '/';
+			$path = '/dojo/extensions/' . str_replace( '_', '-', strtolower( $class )) . '/';
 		}
 
 		self::$class_paths[ $class ]                = $path;

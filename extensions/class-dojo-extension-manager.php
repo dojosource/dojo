@@ -314,7 +314,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 	public function ajax_update_extension() {
 		// for now, same thing
-		$this->ajax_install_extension();
+		return $this->ajax_install_extension();
 	}
 
 	public function ajax_remove_extension() {
