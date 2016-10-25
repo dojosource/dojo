@@ -59,13 +59,12 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	}
 
 	private function include_plugin_extension( $name ) {
-		$root_path = dirname( Dojo_Loader::plugin_path() ) . '/';
-		$path = $root_path . 'dojo-' . $name . '/';
+		$path = Dojo_Loader::plugin_path() . '/dojo-' . $name . '/';
 		$class = 'Dojo_' . ucfirst( $name );
 		if ( file_exists( $path . 'dojo-' . $name . '.php' ) ) {
 			$this->plugin_extensions[ $class ] = $class;
 			$this->active_extensions[ $class ] = $class;
-			Dojo_Loader::add_extension( $class, '/../dojo-' . $name . '/' );
+			Dojo_Loader::add_extension( $class, '/dojo-' . $name . '/' );
 			$this->get_instance( $class );
 		}
 	}
@@ -337,7 +336,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	/**** Utility ****/
 
 	public function extension_plugin_exists( $extension ) {
-		return file_exists( dirname( Dojo_Loader::plugin_path() ) . '/dojo-' . $extension );
+		return file_exists( Dojo_Loader::plugin_path() . '/dojo-' . $extension );
 	}
 
 	private function remove_folder( $path ) {
@@ -358,7 +357,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		}
 
 		// clear the destination
-		$destination = dirname( Dojo_Loader::plugin_path() ) . '/dojo-' . $extension;
+		$destination = Dojo_Loader::plugin_path() . '/dojo-' . $extension;
 		$this->remove_folder( $destination );
 
 		// use built-in upgrader
@@ -387,7 +386,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 	private function activate_extension( $extension ) {
 		$plugin = 'dojo-' . $extension . '/dojo-' . $extension . '.php';
-		$result = activate_plugin( $plugin, self_admin_url('plugins.php?error=true&plugin=' . $plugin), is_network_admin() );
+		$result = activate_plugin( $plugin, '', is_network_admin() );
 
 		if ( is_wp_error( $result ) ) {
 			return 'Error: ' . esc_html( $result->get_error_message() );
@@ -406,7 +405,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		$this->get_instance( $class . '_Installer' )->uninstall();
 
 		// remove files
-		$this->remove_folder( dirname( Dojo_Loader::plugin_path() ) . '/dojo-' . $extension );
+		$this->remove_folder( Dojo_Loader::plugin_path() . '/dojo-' . $extension );
 
 		return 'process_success';
 	}

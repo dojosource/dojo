@@ -13,9 +13,9 @@ class Dojo_Loader {
 
 	// initialize class locations
 	private static $class_paths = array(
-		'Dojo'                      => '/',
-		'Dojo_Extension'            => '/extensions/',
-		'Dojo_Extension_Manager'    => '/extensions/',
+		'Dojo'                      => '/dojo/',
+		'Dojo_Extension'            => '/dojo/extensions/',
+		'Dojo_Extension_Manager'    => '/dojo/extensions/',
 	);
 
 	// interfaces are all pre-defined here
@@ -75,9 +75,48 @@ class Dojo_Loader {
 	 */
 	public static function plugin_path() {
 		if ( ! self::$plugin_path ) {
-			self::$plugin_path = dirname( __FILE__ );
+			self::$plugin_path = dirname( dirname( __FILE__ ) );
 		}
 		return self::$plugin_path;
+	}
+
+	/**
+	 * Get the path of the dojo plugin
+	 *
+	 * @return string
+	 */
+	public static function dojo_path() {
+		return self::plugin_path() . '/dojo';
+	}
+
+	/**
+	 * Get the path of a given class. Defaults to dojo plugin folder if not known.
+	 * Includes trailing slash.
+	 *
+	 * @param $class
+	 *
+	 * @return string
+	 */
+	public static function get_class_path( $class ) {
+		if ( isset( self::$class_paths[ $class ] ) ) {
+			return self::$plugin_path . self::$class_paths[ $class ];
+		}
+		return self::dojo_path() . '/';
+	}
+
+	/**
+	 * Get the url of the folder containing the given class. Defaults to dojo plugin folder if not known.
+	 * Includes trailing slash.
+	 *
+	 * @param $class
+	 *
+	 * @return string
+	 */
+	public static function get_class_url( $class ) {
+		if ( isset( self::$class_paths[ $class ] ) ) {
+			return plugins_url( self::$class_paths[ $class ] );
+		}
+		return plugins_url( 'dojo/' );
 	}
 
 	/**
@@ -99,9 +138,9 @@ class Dojo_Loader {
 				require_once $path;
 			}
 		} else {
-			// default to root directory but only if class prefix is correct
+			// default to root dojo directory but only if class prefix is correct
 			if ( 0 === strpos( $path_format, 'dojo-' ) ) {
-				$path = $plugin_path . '/class-' . $path_format . '.php';
+				$path = self::dojo_path() . '/class-' . $path_format . '.php';
 				if ( file_exists( $path ) ) {
 					require_once $path;
 				}

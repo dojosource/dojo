@@ -85,7 +85,7 @@ class Dojo_Extension extends Dojo_WP_base {
 	 */
 	protected function path( $file = '' ) {
 		$class = get_class( $this );
-		return plugin_dir_path( __FILE__ ) . str_replace( '_', '-', strtolower( $class )) . '/' . $file;
+		return Dojo_Loader::get_class_path( $class ) . $file;
 	}
 
 	/**
@@ -96,10 +96,8 @@ class Dojo_Extension extends Dojo_WP_base {
 	 */
 	protected function url( $file = '' ) {
 		$class = get_class( $this );
-		return plugin_dir_url( __FILE__ ) . str_replace( '_', '-', strtolower( $class ) ) . '/' . $file;
+		return Dojo_Loader::get_class_url( $class ) . $file;
 	}
-
-
 
 	/**
 	 * Registers custom pages for this extension. Pages passed in as name => slug pairs where name is the name of
