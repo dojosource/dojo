@@ -322,7 +322,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 	/**** Utility ****/
 
-	public function extension_exists( $extension ) {
+	public function extension_plugin_exists( $extension ) {
 		return file_exists( dirname( Dojo_Loader::plugin_path() . '/dojo-' . $extension ) );
 	}
 
