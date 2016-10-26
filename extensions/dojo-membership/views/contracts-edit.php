@@ -5,8 +5,10 @@ $contract = $this->selected_contract;
 $programs = $this->programs;
 $documents = $this->documents;
 $contract_programs = $this->contract_programs;
+$contract_reg_price_plan = $this->contract_reg_price_plan;
 $contract_price_plan = $this->contract_price_plan;
 $contract_documents = $this->contract_documents;
+
 
 if ( null === $contract ) {
 	$new = true;
@@ -40,6 +42,17 @@ if ( null === $contract ) {
 				</tr>
 
 				<tr valign="top">
+					<th scope="row">Qualifying Restrictions</th>
+					<td>
+						<select id="membership_restriction" name="membership_restriction">
+							<option <?php echo $new ? '' : selected( $contract->new_memberships_only . $contract->continuing_memberships_only, '00' ) ?> value="none">No Restrictions</option>
+							<option <?php echo $new ? '' : selected( $contract->new_memberships_only, '1' ) ?> value="new">New Members Only</option>
+							<option <?php echo $new ? '' : selected( $contract->continuing_memberships_only, '1' ) ?> value="continuing">Continuing Members Only</option>
+						</select>
+					</td>
+				</tr>
+
+				<tr valign="top">
 					<th scope="row">Cancellation Policy</th>
 					<td>
 						<select id="cancellation_policy" name="cancellation_policy">
@@ -47,25 +60,9 @@ if ( null === $contract ) {
 							<option <?php echo $new ? '' : selected( $contract->cancellation_policy, 'none' ) ?> value="none">No Cancellations</option>
 							<option <?php echo $new ? '' : selected( $contract->cancellation_policy, 'days' ) ?> value="days">Notice Required</option>
 						</select>
-					</td>
-				</tr>
-
-				<tr valign="top" class="cancellation-days-row"<?php echo ( ! $new && 'days' == $contract->cancellation_policy ) ? '' : ' style="display:none;"' ?>>
-					<th scope="row">Cancellation Notice Required</th>
-					<td>
-						<input type="text" id="cancellation_days" name="cancellation_days" class="small-text" value="<?php echo $new ? '' : esc_attr( $contract->cancellation_days ) ?>"> Days in advance
-					</td>
-				</tr>
-
-				<tr valign="top">
-					<th scope="row">Qualifying Restrictions</th>
-					<td>
-						<input type="radio" id="membership_restriction" name="membership_restriction" value="none" <?php echo $new ? 'checked' : checked( $contract->new_memberships_only . $contract->continuing_memberships_only, '00') ?>>
-						No restrictions.<br />
-						<input type="radio" id="membership_restriction" name="membership_restriction" value="new" <?php echo $new ? '' : checked( $contract->new_memberships_only, '1') ?>>
-						Only available to new members.<br />
-						<input type="radio" id="membership_restriction" name="membership_restriction" value="continuing" <?php echo $new ? '' : checked( $contract->continuing_memberships_only, '1' ) ?>>
-						Only available to existing members continuing their contract.<br />
+						<div class="cancellation-days-row"<?php echo ( ! $new && 'days' == $contract->cancellation_policy ) ? '' : ' style="display:none;"' ?>>
+							<input type="text" id="cancellation_days" name="cancellation_days" class="small-text" style="margin-top:5px;" value="<?php echo $new ? '' : esc_attr( $contract->cancellation_days ) ?>"> days in advance
+						</div>
 					</td>
 				</tr>
 			</tbody>
@@ -73,9 +70,17 @@ if ( null === $contract ) {
 
 		<table class="form-table">
 			<tbody>
-				 <tr valign="top">
-					<th scope="row">Price Plan</th>
+				<tr	valign="top">
+					<th scope="row">Registration Fee</th>
 					<td>
+						<p>This is a <strong>one time</strong> fee when first registering for this contract. Leave blank or set to zero to disable.</p>
+						<?php $contract_reg_price_plan->render_edit( 'registration_pricing' ) ?>
+					</td>
+				</tr>
+				<tr valign="top">
+					<th scope="row">Monthly Fee</th>
+					<td>
+						<p>This is the <strong>ongoing</strong> fee due monthly for the duration of the contract.</p>
 						<?php $contract_price_plan->render_edit() ?>
 					</td>
 				</tr>
@@ -99,7 +104,7 @@ if ( null === $contract ) {
 				<tr valign="top">
 					<th scope="row">Contract Documents</th>
 					<td>
-						<p>Select documents applicants will need to complete for this contract.</p>
+						<p>Select documents applicants will need to complete and hand in for this contract.</p>
 						<?php if ( 0 == count( $documents ) ) : ?>
 							<div class="dojo-info">
 								No documents created yet. Select <a href="<?php echo esc_attr( admin_url( 'admin.php?page=dojo-documents' ) ) ?>">Documents</a> from the menu to manage and add documents.

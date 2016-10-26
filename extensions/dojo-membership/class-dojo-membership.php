@@ -269,6 +269,11 @@ Phone: '.$_POST['phone']
 		$_POST['new_memberships_only']          = 'new' == $_POST['membership_restriction'] ? 1 : 0;
 		$_POST['continuing_memberships_only']   = 'continuing' == $_POST['membership_restriction'] ? 1 : 0;
 
+		// serialize registration price details
+		$registration = new Dojo_Price_Plan();
+		$registration->handle_post( 'registration_pricing' );
+		$_POST['registration_pricing'] = (string)$registration;
+
 		// serialize price plan details
 		$price_plan = new Dojo_Price_Plan();
 		$price_plan->handle_post();
@@ -481,9 +486,28 @@ Phone: '.$_POST['phone']
 			}
 		}
 
-		// return line items to refresh checkout table
-		$line_items = $this->get_new_contract_line_items( $user->ID );
-		echo json_encode( $line_items );
+		$contracts = $this->model()->get_user_contracts( $user->ID );
+		$line_items = $this->get_contract_line_items( $contracts );
+		$registration_fees = $this->get_contract_line_items( $contracts, true );
+
+		$reg_fee_billed = 0;
+		$reg_fee = 0;
+		foreach ( $registration_fees as $reg_line_item ) {
+			if ( $this->is_status_submitted( $reg_line_item['membership_status'] ) ) {
+				$reg_fee_billed += $reg_line_item['amount_cents'];
+			} else {
+				$reg_fee += $reg_line_item['amount_cents'];
+			}
+		}
+
+		$response = array(
+			'line_items'        => $line_items,
+			'registration_fees' => $registration_fees,
+			'reg_fee_billed'    => $reg_fee_billed,
+			'reg_fee'           => $reg_fee,
+		);
+
+		return $response;
 	}
 
 	/**
@@ -551,6 +575,7 @@ Phone: '.$_POST['phone']
 		}
 
 		$contracts = $this->model()->get_user_contracts( $user->ID );
+		$registration_line_items = $this->get_contract_line_items( $contracts, true );
 		$new_students = array();
 		foreach ( $contracts as $contract ) {
 
@@ -568,8 +593,20 @@ Phone: '.$_POST['phone']
 			$student->contract = $contract;
 			$new_students[] = $student;
 
-			// change state to submitted
-			$this->model()->update_membership( $contract->membership_id, array( 'status' => self::MEMBERSHIP_SUBMITTED ) );
+			// get registration fee calculated for this membership
+			$registration_fee = 0;
+			foreach ( $registration_line_items as $line_item ) {
+				if ( $line_item['membership_id'] == $contract->membership_id ) {
+					$registration_fee = $line_item['amount_cents'];
+					break;
+				}
+			}
+
+			// change state to submitted and set registration fee
+			$this->model()->update_membership( $contract->membership_id, array(
+				'status'           => self::MEMBERSHIP_SUBMITTED,
+				'registration_fee' => $registration_fee,
+			) );
 
 			// actions following change to submitted status
 			$membership = $this->model()->get_membership( $contract->membership_id );
@@ -970,6 +1007,7 @@ Membership: ' . $student->contract->title . '
 		if ( isset ( $_GET['action'] ) ) {
 			switch ( $_GET['action'] ) {
 				case 'add-new' :
+					$this->contract_reg_price_plan = new Dojo_Price_Plan();
 					$this->contract_price_plan = new Dojo_Price_Plan();
 					$this->contract_programs = array();
 					$this->contract_documents = array();
@@ -995,6 +1033,8 @@ Membership: ' . $student->contract->title . '
 					}
 					$this->documents = $this->model()->get_documents();
 
+					$this->selected_contract->registration = '';
+					$this->contract_reg_price_plan = new Dojo_Price_Plan( $this->selected_contract->registration_pricing );
 					$this->contract_price_plan = new Dojo_Price_Plan( $this->selected_contract->family_pricing );
 					echo $this->render( 'contracts-edit' );
 					break;
@@ -1185,7 +1225,8 @@ Membership: ' . $student->contract->title . '
 					}
 				}
 				$this->contracts = $this->get_contracts();
-				$this->line_items = $this->get_new_contract_line_items( $user_id );
+				$user_contracts = $this->model()->get_user_contracts( $user_id );
+				$this->line_items = $this->get_contract_line_items( $user_contracts );
 				echo $this->render( 'user-enroll' );
 				return true;
 
@@ -1208,6 +1249,7 @@ Membership: ' . $student->contract->title . '
 				if ( isset( $_GET['contract'] ) ) {
 					$this->selected_contract = $this->model()->get_contract( $_GET['contract'] );
 					$this->contract_programs = $this->model()->get_contract_programs( $_GET['contract'] );
+					$this->contract_reg_price_plan = new Dojo_Price_Plan( $this->selected_contract->registration_pricing );
 					$this->contract_price_plan = new Dojo_Price_Plan( $this->selected_contract->family_pricing );
 				}
 
@@ -1508,6 +1550,7 @@ Membership: ' . $student->contract->title . '
 		foreach ( $contracts as $contract ) {
 			$response[ $contract->ID ] = $contract;
 			$response[ $contract->ID ]->documents = $this->model()->get_contract_documents( $contract->ID );
+			$response[ $contract->ID ]->registration = new Dojo_Price_Plan( $contract->registration_pricing );
 			$response[ $contract->ID ]->pricing = new Dojo_Price_Plan( $contract->family_pricing );
 		}
 		return $response;
@@ -1527,14 +1570,16 @@ Membership: ' . $student->contract->title . '
 	 * Sorts students by contract price in descending order. Student records in response
 	 * will include contract and applicable contract_price based on sort order
 	 *
-	 * @param int $student_contracts Array( array( family_pricing, student_id ) )
+	 * @param int $student_contracts Array( array( registration_pricing, family_pricing, student_id ) )
+	 * @param bool $use_registration_price set to true to use registration price instead of monthly price
 	 *
 	 * @return array ( student )
 	 */
-	public function sort_student_contracts( $student_contracts )
+	public function sort_student_contracts( $student_contracts, $use_registration_price = false )
 	{
 		// parse pricing for each contract
 		foreach ( $student_contracts as $contract ) {
+			$contract->registration = new Dojo_Price_Plan( $contract->registration_pricing );
 			$contract->pricing = new Dojo_Price_Plan( $contract->family_pricing );
 		}
 
@@ -1543,7 +1588,11 @@ Membership: ' . $student->contract->title . '
 		while ( count( $student_contracts ) > 0 ) {
 			$max = null;
 			foreach ( $student_contracts as $index => $contract ) {
-				$price = $contract->pricing->get_price( $person );
+				if ( $use_registration_price ) {
+					$price = $contract->registration->get_price( $person );
+				} else {
+					$price = $contract->pricing->get_price( $person );
+				}
 				if ( null === $max || $price > $max ) {
 					$max = $price;
 					$max_index = $index;
@@ -1573,7 +1622,7 @@ Membership: ' . $student->contract->title . '
 		$line_items = array();
 		foreach ( $students as $student ) {
 			// if status not yet paid
-			if ( null !== array_search( $student->contract->membership_status, array(
+			if ( false !== array_search( $student->contract->membership_status, array(
 				self::MEMBERSHIP_NA,
 				self::MEMBERSHIP_PENDING,
 				self::MEMBERSHIP_SUBMITTED,
@@ -1595,11 +1644,12 @@ Membership: ' . $student->contract->title . '
 	 * Get line items for given contracts. Requires family_pricing, student_id, membership_id, membership_status and title on each record.
 	 *
 	 * @param $contracts
+	 * @param bool $use_registration_price
 	 *
 	 * @return array
 	 */
-	public function get_contract_line_items( $contracts ) {
-		$students = $this->sort_student_contracts( $contracts );
+	public function get_contract_line_items( $contracts, $use_registration_price = false ) {
+		$students = $this->sort_student_contracts( $contracts, $use_registration_price );
 		$line_items = array();
 		foreach ( $students as $student ) {
 			$line_items[] = array(

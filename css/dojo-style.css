@@ -90,6 +90,11 @@ a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:vi
 	background-color: #f2dede;
 }
 
+.dojo-note {
+	font-size: 0.8em;
+	font-style: italic;
+}
+
 select.dojo-small-select {
 	width: 100px;
 }
@@ -164,6 +169,10 @@ select.dojo-small-select {
 	padding-left: 15px;
 }
 
+.dojo-md-right-left {
+	text-align: left;
+}
+
 @media (min-width: 992px) {
 	.dojo-col-md-4, .dojo-col-md-5, .dojo-col-md-6, .dojo-col-md-7, .dojo-col-md-8 {
 		float: left;
@@ -190,6 +199,10 @@ select.dojo-small-select {
 
 	.dojo-hide-md {
 		display: none;
+	}
+
+	.dojo-md-right-left {
+		text-align: right;
 	}
 }
 

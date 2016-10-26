@@ -138,19 +138,21 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
 	 * Outputs the edit block to include in a settings form. Should be included in the same
 	 * place you would put a normal form input
 	 */
-	public function render_edit() {
+	public function render_edit( $ID = 'family_pricing' ) {
 		$family_pricing_enabled = isset( $this->state->family_pricing ) && 1 == $this->state->family_pricing;
 		$simple_price = isset( $this->state->simple_price ) ? $this->state->simple_price : '';
 		$rule_count = isset( $this->state->rule_count ) ? $this->state->rule_count : 1;
+
+		$container_class = str_replace( '_', '-', $ID ) . '-container';
 
 		// make sure we have at least one empty rule
 		if ( 0 == $rule_count ) {
 			$rule_count = 1;
 		}
 		?>
-		<div class="dojo-block">
-			<label for="family_pricing">
-				<input type="checkbox" id="family_pricing" name="family_pricing" value="1" <?php checked( $family_pricing_enabled, '1' ) ?>>
+		<div class="dojo-block <?php echo $container_class ?>">
+			<label for="<?php echo $ID ?>">
+				<input type="checkbox" id="<?php echo $ID ?>" name="<?php echo $ID ?>" value="1" <?php checked( $family_pricing_enabled, '1' ) ?>>
 				Enable family pricing
 			</label>
 
@@ -160,7 +162,7 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
 						<tr valign="top">
 							<th scope="row">Cost per person</th>
 							<td>
-								<span>$<span><input type="text" id="simple_price" name="simple_price" size="8" style="display:inline;width:auto;" value="<?php echo esc_attr( $simple_price ) ?>">
+								<span>$<span><input type="text" id="<?php echo $ID . '_simple' ?>" name="<?php echo $ID . '_simple' ?>" size="8" style="display:inline;width:auto;" value="<?php echo esc_attr( $simple_price ) ?>">
 							</td>
 						</tr>
 					</tbody>
@@ -172,6 +174,8 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
 				<?php
 				$price_x = 'price_' . $rule;
 				$count_x = 'count_' . $rule;
+				$price_x_id = $ID . '_' . $price_x;
+				$count_x_id = $ID . '_' . $count_x;
 				$price = $count = '';
 				if ( isset( $this->state->$price_x ) ) {
 					$price = $this->state->$price_x;
@@ -185,13 +189,13 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
 						<tr valign="top">
 							<th scope="row" class="dojo-plan-cost"><?php echo 1 == $rule ? 'Cost' : 'then cost' ?> per person</th>
 							<td>
-								<span>$<span><input type="text" name="<?php echo $price_x ?>" size="8" style="display:inline;width:auto;" value="<?php echo esc_attr( $price ) ?>">
+								<span>$<span><input type="text" name="<?php echo $price_x_id ?>" size="8" style="display:inline;width:auto;" value="<?php echo esc_attr( $price ) ?>">
 							</td>
 						</tr>
 						<tr valign="top">
 							<th scope="row" class="dojo-plan-for">for <?php echo 1 == $rule ? 'first' : 'next' ?></th>
 							<td>
-								<select class="price-count" name="<?php echo $count_x ?>" style="display:inline; width:auto;">
+								<select class="price-count" name="<?php echo $count_x_id ?>" style="display:inline; width:auto;">
 								<?php for ( $c = 0; $c <= 5; $c++ ) : ?>
 									<option value="<?php echo $c ?>" <?php selected( $count, $c ) ?>><?php echo 0 == $c ? 'Unlimited' : $c ?></option>
 								<?php endfor; ?>
@@ -212,14 +216,14 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
 			var rule = parseInt(ruleBlock.attr('data-rule'));
 			if (select.val() != 0) {
 			  rule++;
-			  var next = $('table[data-rule="' + rule + '"]');
+			  var next = $('.<?php echo $container_class ?> table[data-rule="' + rule + '"]');
 			  if (0 == next.length) {
 				var newBlock = ruleBlock.clone();
 				ruleBlock.after(newBlock);
 				newBlock.find('input').val('');
-				newBlock.find('input').attr('name', 'price_' + rule);
+				newBlock.find('input').attr('name', '<?php echo $ID ?>_price_' + rule);
 				newBlock.find('.price-count').val('0');
-				newBlock.find('.price-count').attr('name', 'count_' + rule);
+				newBlock.find('.price-count').attr('name', '<?php echo $ID ?>_count_' + rule);
 				newBlock.find('.dojo-plan-cost').text('then cost');
 				newBlock.find('.dojo-plan-for').text('for next');
 				newBlock.attr('data-rule', rule);
@@ -237,18 +241,18 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
 			}
 		  }
 
-		  $('.price-count').change(function() {
+		  $('.<?php echo $container_class ?> .price-count').change(function() {
 			onCountChange($(this));
 		  });
 
-		  $('input[name=family_pricing]').change(function() {
+		  $('.<?php echo $container_class ?> input[name=<?php echo $ID ?>]').change(function() {
 			if ($(this).is(':checked')) {
-				$('.simple-pricing').hide();
-				$('.family-pricing').show();
+				$('.<?php echo $container_class ?> .simple-pricing').hide();
+				$('.<?php echo $container_class ?> .family-pricing').show();
 			}
 			else {
-				$('.family-pricing').hide();
-				$('.simple-pricing').show();
+				$('.<?php echo $container_class ?> .family-pricing').hide();
+				$('.<?php echo $container_class ?> .simple-pricing').show();
 			}
 		  });
 		});
@@ -260,16 +264,16 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
 	 * Call to extract post parameters from settings form. To save result to settings
 	 * cast this object to a string.
 	 */
-	public function handle_post() {
-		if ( isset( $_POST['family_pricing'] ) && '1' == $_POST['family_pricing'] ) {
+	public function handle_post( $ID = 'family_pricing' ) {
+		if ( isset( $_POST[ $ID ] ) && '1' == $_POST[ $ID ] ) {
 			$this->state->family_pricing = 1;
 		}
 		else {
 			$this->state->family_pricing = 0;
 		}
 
-		if ( isset( $_POST['simple_price'] ) ) {
-			$this->state->simple_price = $_POST['simple_price'];
+		if ( isset( $_POST[ $ID . '_simple' ] ) ) {
+			$this->state->simple_price = $_POST[ $ID . '_simple' ];
 		}
 		else {
 			$this->state->simple_price = '';
@@ -278,9 +282,11 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
 		for ( $rule = 1; true; $rule ++ ) {
 			$price_x = 'price_' . $rule;
 			$count_x = 'count_' . $rule;
-			if ( isset ( $_POST[ $price_x ] ) && isset ( $_POST[ $count_x ] ) ) {
-				$this->state->$price_x = $_POST[ $price_x ];
-				$this->state->$count_x = $_POST[ $count_x ];
+			$price_x_id = $ID . '_' . $price_x;
+			$count_x_id = $ID . '_' . $count_x;
+			if ( isset ( $_POST[ $price_x_id ] ) && isset ( $_POST[ $count_x_id ] ) ) {
+				$this->state->$price_x = $_POST[ $price_x_id ];
+				$this->state->$count_x = $_POST[ $count_x_id ];
 			}
 			else {
 				$this->state->rule_count = $rule - 1;

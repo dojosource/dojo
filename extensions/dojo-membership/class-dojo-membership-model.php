@@ -156,7 +156,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
 		$month_start = $this->date( 'Y-m-d 00:00:00', strtotime( $month . '/1/' . $year ) );
 		$month_end = $this->date( 'Y-m-d 00:00:00', strtotime( $next_month . '/1/' . $next_month_year ) );
 
-		$sql = $wpdb->prepare( "SELECT a.*, m.*, m.ID as membership_id, m.status as membership_status, c.family_pricing, c.title
+		$sql = $wpdb->prepare( "SELECT a.*, m.*, m.ID as membership_id, m.status as membership_status, c.registration_pricing, c.family_pricing, c.title
 			FROM $this->accounts a
 			INNER JOIN $this->students s ON a.user_id = s.user_id
 			INNER JOIN $this->memberships m ON s.current_membership_id = m.ID
@@ -265,6 +265,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
 			'end_date',
 			'next_due_date',
 			'contract_id',
+			'registration_fee',
 			'status',
 			'freeze_request_date',
 			'freeze_end_date',
@@ -774,6 +775,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
 			'title',
 			'new_memberships_only',
 			'continuing_memberships_only',
+			'registration_pricing',
 			'family_pricing',
 			'cancellation_policy',
 			'cancellation_days',
@@ -804,6 +806,7 @@ class Dojo_Membership_Model extends Dojo_Model_Base {
 			'title',
 			'new_memberships_only',
 			'continuing_memberships_only',
+			'registration_pricing',
 			'family_pricing',
 			'cancellation_policy',
 			'cancellation_days',

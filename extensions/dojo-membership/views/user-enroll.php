@@ -43,6 +43,17 @@ $checkout_table = new Dojo_Checkout_Table( $line_items, array( 'render_simple_to
 				</div>
 				<?php endforeach; ?>
 
+				<div class="dojo-registration-fee">
+					<div class="dojo-clear-space"></div>
+
+					<span style="font-size:1.2em">
+						Total Registration Fee:
+						<strong>
+							<span class="dojo-registration-amount">></span>
+						</strong>
+					</span>
+				</div>
+
 				<div class="dojo-monthly-pricing">
 					<div class="dojo-clear-space"></div>
 
@@ -119,14 +130,18 @@ jQuery(function($) {
 			data.refresh_only = true;
 		}
 		$.post('<?php echo $this->ajax('save_enrollment') ?>', data, function(response) {
-			var lineItems = eval('(' + response + ')');
-			dojoCheckoutSetLineItems(lineItems);
-			if (0 == lineItems.length) {
+			var data = eval('(' + response + ')');
+			dojoCheckoutSetLineItems(data.line_items);
+			if (0 == data.line_items.length) {
 				$('.dojo-monthly-pricing').hide();
+				$('.dojo-registration-fee').hide();
 			}
 			else {
 				$('.dojo-monthly-pricing').show();
+				$('.dojo-registration-fee').show();
 			}
+			var reg_fee = parseInt(data.reg_fee) / 100;
+			$('.dojo-registration-amount').text('$' + reg_fee.toFixed(2));
 		});
 	};
 
