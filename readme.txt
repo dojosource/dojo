@@ -1,4 +1,4 @@
-=== Dojo (beta) ===
+=== Dojo ===
 Contributors: David273
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NF5XS5NYVQ93N
 Tags: martial arts, school, club, dojo, karate, judo, jiu jitsu
