@@ -408,7 +408,13 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	}
 }
 
-require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php';
+if ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader-skin.php';
+} elseif ( file_exists( ABSPATH . 'wp-admin/includes/class-wp-upgrader-skins.php' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader-skins.php';
+} else {
+	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+}
 
 /**
  * Class Dojo_Silent_Upgrader_Skin
