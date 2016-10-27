@@ -244,7 +244,7 @@ final class Dojo extends Dojo_WP_Base {
 	/**
 	 * Ajax handling uses two get parameters for routing to a method on an object.
 	 * Get parameter, "target" will be prefixed with Dojo_ to resolve to a dojo class.
-	 * Get parameter, "method" will be prefixed with ajax_ to resolve to a method on that class.
+	 * Get parameter, "method" will be prefixed with ajax_ if nonce exists otherwise prefixed with api_
 	 * A bool flag is passed to the method to indicate user is logged in.
 	 * If the method returns a string the string will be echoed out in the response.
 	 * If the method returns an array or object it will be converted to JSON and echoed.
@@ -253,10 +253,19 @@ final class Dojo extends Dojo_WP_Base {
 	 */
 	public function handle_wp_ajax_dojo( $arg ) {
 		$is_logged_in = 'nopriv' !== $arg;
+		if ( isset( $_GET['_dojononce'] ) ) {
+			if ( ! wp_verify_nonce( $_GET['_dojononce'], $_GET['method'] ) ) {
+				wp_die();
+			}
+			$prefix = 'ajax_';
+		} else {
+			$prefix = 'api_';
+		}
+
 		if ( isset( $_GET['target'] ) && isset( $_GET['method'] ) ) {
 			$target = 'Dojo_' . $_GET['target'];
 			if ( class_exists( $target ) ) {
-				$method = 'ajax_' . $_GET['method'];
+				$method = $prefix . $_GET['method'];
 				$instance = $this->get_instance( $target );
 				if ( method_exists( $instance, $method ) ) {
 					$result = call_user_func( array( $instance, $method ), $is_logged_in );
@@ -272,7 +281,7 @@ final class Dojo extends Dojo_WP_Base {
 			}
 		} elseif (isset( $_GET['method'] ) ) {
 			// target is this main dojo class
-			$method = 'ajax_' . $_GET['method'];
+			$method = $prefix . $_GET['method'];
 			if ( method_exists( $this, $method ) ) {
 				$result = call_user_func( array( $this, $method ), $is_logged_in );
 				if ( is_string( $result ) ) {

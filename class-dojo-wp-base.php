@@ -29,12 +29,25 @@ class Dojo_WP_Base {
 	/**
 	 * Gets ajax url for routing a call to the given method on this object.
 	 * The given method name will be prefixed with ajax_ when the callback is routed.
+	 * The link is protected with a nonce. If you need an permanent link use api().
 	 *
 	 * @param string $method Name of method to call without ajax_ prefix.
 	 *
 	 * @return string
 	 */
 	public function ajax( $method ) {
+		// add nonce for ajax calls
+		return $this->api( $method ) . '&_dojononce=' . wp_create_nonce( $method );
+	}
+
+	/**
+	 * Just like ajax() but does not use a nonce and prefixes the method with api_ on callback.
+	 *
+	 * @param $method
+	 *
+	 * @return string
+	 */
+	public function api( $method ) {
 		// get class name without Dojo_ prefix
 		$target = substr( get_class( $this ), 5 );
 
@@ -44,6 +57,7 @@ class Dojo_WP_Base {
 		if ( '' != $target ) {
 			$url .= '&target=' . urlencode( $target );
 		}
+
 		return $url;
 	}
 
