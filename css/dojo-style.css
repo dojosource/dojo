@@ -167,6 +167,7 @@ select.dojo-small-select {
 	min-height: 1px;
 	padding-right: 15px;
 	padding-left: 15px;
+	box-sizing: border-box;
 }
 
 .dojo-md-right-left {

@@ -120,6 +120,7 @@ a:link.dojo-red-link, a:visited.dojo-red-link, a:link:active.dojo-red-link, a:vi
 	min-height: 1px;
 	padding-right: 15px;
 	padding-left: 15px;
+	box-sizing: border-box;
 }
 
 @media (min-width: 992px) {
