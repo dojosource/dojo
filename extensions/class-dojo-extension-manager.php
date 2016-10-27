@@ -20,7 +20,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		) );
 
 		$this->register_filters( array (
-			'pre_set_site_transient_update_plugins',
+//			'pre_set_site_transient_update_plugins',
 		) );
 
 		// core list of extensions will always be enabled

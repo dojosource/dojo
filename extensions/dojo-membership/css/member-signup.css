@@ -39,6 +39,10 @@
 	margin: 20px 0;
 }
 
+.dojo-membership-field input {
+	width: 100%;
+}
+
 .dojo-membership input[name=terms] {
 	margin-right: 5px;
 }
