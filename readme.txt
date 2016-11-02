@@ -1,10 +1,10 @@
-=== Dojo ===
+=== Dojo (beta) ===
 Contributors: David273
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NF5XS5NYVQ93N
 Tags: martial arts, school, club, dojo, karate, judo, jiu jitsu
 Requires at least: 4.0
 Tested up to: 4.6.1
-Stable tag: 0.20
+Stable tag: 0.21
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,9 +16,7 @@ We are currently in Beta and excited to see this plugin begin to make a differen
 As we work out rough edges and push toward an official v1.0 we highly value your feedback!
 
 The Dojo plugin is built primarily for managing a Martial Arts school with a member interface on your web site.
-
-We like family friendly schools and we know how family friendly contracts with discounts can complicate things. Dojo aims to
-simplify contract management and give members more self-serve options so you can focus on running a great program!
+Dojo aims to simplify contract management and give members self-serve options so you can focus on running a great program!
 
 Here's what you can expect in this plugin:
 
@@ -31,6 +29,12 @@ Here's what you can expect in this plugin:
 * Member dashboard where members can see the status of their membership, manage their monthly billing day, and add new students.
 * Developer hooks for extending and customizing.
 * And of course, mobile friendly. Everything is designed to be responsive.
+
+For now, of course, you can also expect a beta version experience:
+
+* No multisite support yet
+* Not localization friendly yet
+* There are going to be some rough edges. If you find some, please let us know!
 
 Pro Add-Ons (not included in this plugin):
 
