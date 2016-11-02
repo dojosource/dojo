@@ -255,7 +255,7 @@ final class Dojo extends Dojo_WP_Base {
 		$is_logged_in = 'nopriv' !== $arg;
 		if ( isset( $_GET['_dojononce'] ) ) {
 			if ( ! wp_verify_nonce( $_GET['_dojononce'], $_GET['method'] ) ) {
-				wp_die();
+				wp_die( 'Invalid request' );
 			}
 			$prefix = 'ajax_';
 		} else {

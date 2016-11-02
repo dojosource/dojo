@@ -144,13 +144,20 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 <script>
 jQuery(function($) {
 
+	var ajax_urls = {
+		install_extension  : '<?php echo $this->ajax( 'install_extension' ) ?>',
+		update_extension   : '<?php echo $this->ajax( 'update_extension' ) ?>',
+		activate_extension : '<?php echo $this->ajax( 'activate_extension' ) ?>',
+		remove_extension   : '<?php echo $this->ajax( 'remove_extension' ) ?>'
+	};
+
 	function doAction(action, context) {
 		var btn = context;
 		btn.hide();
 		btn.next().show();
 		$('.dojo-error-container').hide();
 		var extension = btn.closest('.dojo-extension-block').attr('data-extension');
-		var url = '<?php echo $this->ajax( '__ACTION__' ) ?>'.replace('__ACTION__', action);
+		var url = ajax_urls[action];
 		$.post(url, { extension: extension }, function(response) {
 			if (response.indexOf('process_success') != -1) {
 				window.location.reload();
