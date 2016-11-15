@@ -27,6 +27,10 @@ $extension_manager = Dojo_Extension_Manager::instance();
 jQuery(function($) {
 	$.post('<?php echo $extension_manager->ajax( 'get_management_view' ) ?>', {}, function(response) {
 		$('.dojo-manage-extensions').html(response);
+		<?php if ( isset( $_GET['dojo-install'] ) ) : ?>
+		$('div[data-extension=' + $_GET['dojo-install'] + '] .dojo-install').click();
+		$('div[data-extension=' + $_GET['dojo-install'] + '] .dojo-update').click();
+		<?php endif; ?>
 	});
 });
 </script>

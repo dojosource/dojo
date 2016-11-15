@@ -362,7 +362,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 		// capture credential form output if necessary
 		$form = '';
-		$url = wp_nonce_url( 'admin.php?page=dojo-settings&dojo-install=' . url_encode( $extension ), 'dojo-settings' );
+		$url = wp_nonce_url( 'admin.php?page=dojo-settings&dojo-install=' . urlencode( $extension ), 'dojo-settings' );
 		ob_start();
 		// set up credentials to access the file system
 		if ( false === ( $creds = request_filesystem_credentials( $url, '', false, false, array() ) ) ) {
