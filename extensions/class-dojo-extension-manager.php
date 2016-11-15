@@ -397,6 +397,14 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 		// if we need to prompt the user with a credential form for file access
 		if ( '' != $form ) {
+			$form .= '
+			<script>
+				jQuery(function($) {
+					$('.request-filesystem-credentials-action-buttons .button').click(function(ev) {
+						ev.preventDefault();
+					});
+				});
+			</script>';
 			return $form;
 		}
 
