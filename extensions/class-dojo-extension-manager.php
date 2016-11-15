@@ -16,7 +16,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	private function __construct() {
 		$this->register_action_handlers( array (
 			array( 'plugins_loaded', 1, 0 ),
-			array( 'upgrader_process_complete', 10, 2 ),
+//			array( 'upgrader_process_complete', 10, 2 ),
 		) );
 
 		$this->register_filters( array (
@@ -275,10 +275,6 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 			return 'Access denied';
 		}
 
-		if ( ! class_exists( 'WP_Upgrader' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-		}
-
 		// make sure extension exists
 		$extension = $_POST['extension'];
 
@@ -337,14 +333,20 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	}
 
 	private function remove_folder( $path ) {
-		$files = array_diff( scandir( $path ), array( '.', '..' ) );
-		foreach ( $files as $file ) {
-			( is_dir( "$path/$file" ) ) ? $this->remove_folder( "$path/$file" ) : unlink( "$path/$file" );
+		if ( file_exists( $path ) ) {
+			$files = array_diff( scandir( $path ), array( '.', '..' ) );
+			foreach ( $files as $file ) {
+				( is_dir( "$path/$file" ) ) ? $this->remove_folder( "$path/$file" ) : unlink( "$path/$file" );
+			}
+			return rmdir( $path );
 		}
-		return rmdir( $path );
 	}
 
 	private function install_extension( $extension ) {
+		if ( ! class_exists( 'WP_Upgrader' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		}
+
 		$response = $this->call_dojosource( 'get_extension', array(
 			'extension'  => $extension,
 		) );
@@ -356,6 +358,29 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		// clear the destination
 		$destination = Dojo_Loader::plugin_path() . '/dojo-' . $extension;
 		$this->remove_folder( $destination );
+
+		$url = wp_nonce_url( 'admin.php?page=dojo-settings', 'dojo-settings' );
+
+		// capture credential form output if necessary
+		$form = '';
+		ob_start();
+
+		// set up credentials to access the file system
+		if ( false === ( $creds = request_filesystem_credentials( $url, '', false, false, array() ) ) ) {
+			// no credentials to be found, a credential form has been generated
+			$form = ob_get_clean();
+		}  elseif ( ! WP_Filesystem( $creds ) ) {
+			// credentials did not check out, generate the form with errors
+			request_filesystem_credentials( esc_url_raw( $url ), '', true, false, array() );
+			$form = ob_get_clean();
+		} else {
+			ob_get_clean();
+		}
+
+		// if we need to prompt the user with a credential form for file access
+		if ( '' != $form ) {
+			return $form;
+		}
 
 		// use built-in upgrader
 		ob_start();
