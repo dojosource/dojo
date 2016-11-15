@@ -251,6 +251,25 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		return $this->install_extension( $extension );
 	}
 
+	public function ajax_install_extension_cred() {
+		if ( ! current_user_can( 'update_plutins' ) ) {
+			return 'Access denied';
+		}
+
+		if ( ! class_exists( 'WP_Upgrader' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		}
+
+		$extension = $_GET['dojo-install'];
+
+		$result = $this->install_extension( $extension );
+		if ( 'process_success' == $result ) {
+			wp_redirect( admin_url( 'admin.php?page=dojo-settings' ) );
+			return;
+		}
+		return $result;
+	}
+
 	public function ajax_activate_extension() {
 		if ( ! current_user_can( 'activate_plugins' ) ) {
 			return 'Access denied';
@@ -362,7 +381,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 		// capture credential form output if necessary
 		$form = '';
-		$url = wp_nonce_url( 'admin.php?page=dojo-settings&dojo-install=' . urlencode( $extension ), 'dojo-settings' );
+		$url = $this->ajax( 'install_extension_cred' ) . '&dojo-install=' . urlencode( $extension );
 		ob_start();
 		// set up credentials to access the file system
 		if ( false === ( $creds = request_filesystem_credentials( $url, '', false, false, array() ) ) ) {
