@@ -359,12 +359,11 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 		$destination = Dojo_Loader::plugin_path() . '/dojo-' . $extension;
 		$this->remove_folder( $destination );
 
-		$url = wp_nonce_url( 'admin.php?page=dojo-settings', 'dojo-settings' );
 
 		// capture credential form output if necessary
 		$form = '';
+		$url = wp_nonce_url( 'admin.php?page=dojo-settings&dojo-install=' . url_encode( $extension ), 'dojo-settings' );
 		ob_start();
-
 		// set up credentials to access the file system
 		if ( false === ( $creds = request_filesystem_credentials( $url, '', false, false, array() ) ) ) {
 			// no credentials to be found, a credential form has been generated

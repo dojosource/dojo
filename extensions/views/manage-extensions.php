@@ -29,7 +29,10 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 	}
 }
 
-
+$install_extension = '';
+if ( isset( $_GET['dojo-install'] ) ) {
+	$install_extension = $_GET['dojo-install'];
+}
 
 ?>
 
@@ -45,7 +48,7 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 </div>
 
 <?php foreach ( $installed_extensions as $extension_id => $extension ) : ?>
-<div class="dojo-extension-block" data-extension="<?php echo esc_attr( $extension_id ) ?>">
+<div class="dojo-extension-block<?php echo $install_extension == $extension_id ? ' .dojo-do-update' : '' ?>" data-extension="<?php echo esc_attr( $extension_id ) ?>">
 	<div class="dojo-large-icon dojo-left">
 		<?php if ( isset( $info['icons'][ $extension_id ] ) ) : ?>
 		<span class="dashicons dashicons-<?php echo $info['icons'][ $extension_id ] ?>"></span>
@@ -117,7 +120,7 @@ foreach ( $info['extensions'] as $extension_id => $extension_title ) {
 <?php endforeach; ?>
 
 <?php foreach ( $available_extensions as $extension_id => $extension_title ) : ?>
-<div class="dojo-extension-block" data-extension="<?php echo esc_attr( $extension_id ) ?>">
+<div class="dojo-extension-block<?php echo $install_extension == $extension_id ? ' dojo-do-install' : '' ?>" data-extension="<?php echo esc_attr( $extension_id ) ?>">
 	<div class="dojo-large-icon dojo-left">
 		<span class="dashicons dashicons-<?php echo $info['icons'][ $extension_id ] ?>"></span>
 	</div>
@@ -188,5 +191,9 @@ jQuery(function($) {
 			doAction('remove_extension', $(this));
 		}
 	});
+
+	$('.dojo-do-install .dojo-install').click();
+	$('.dojo-do-update .dojo-update').click();
 });
 </script>
+
