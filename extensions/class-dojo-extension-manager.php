@@ -252,7 +252,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 	}
 
 	public function ajax_install_extension_cred() {
-		if ( ! current_user_can( 'update_plutins' ) ) {
+		if ( ! current_user_can( 'update_plugins' ) ) {
 			return 'Access denied';
 		}
 
@@ -389,7 +389,7 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 			$form = ob_get_clean();
 		}  elseif ( ! WP_Filesystem( $creds ) ) {
 			// credentials did not check out, generate the form with errors
-			request_filesystem_credentials( esc_url_raw( $url ), '', true, false, array() );
+			request_filesystem_credentials( $url, '', true, false, array() );
 			$form = ob_get_clean();
 		} else {
 			ob_get_clean();
@@ -397,11 +397,14 @@ class Dojo_Extension_Manager extends Dojo_WP_Base {
 
 		// if we need to prompt the user with a credential form for file access
 		if ( '' != $form ) {
+
+			// append script to prevent form from submitting the outer settings form
 			$form .= "
 			<script>
 				jQuery(function($) {
 					$('.request-filesystem-credentials-action-buttons .button').click(function(ev) {
 						ev.preventDefault();
+						$(this).closest('form').submit();
 					});
 				});
 			</script>";
