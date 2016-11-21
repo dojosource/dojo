@@ -36,7 +36,8 @@ $checkout_table = new Dojo_Checkout_Table( $line_items, array( 'render_simple_to
 					<select name="enrollment_<?php echo esc_attr( $student->ID ) ?>">
 						<option value="">Please Select</option>
 						<?php foreach ( $contracts as $contract ) : ?>
-						<option value="<?php echo esc_attr( $contract->ID ) ?>" <?php selected( $student->membership->contract_id, $contract->ID ) ?>><?php echo esc_html( $contract->title ) ?></option>
+							<?php if ( ! $this->is_valid_student_contract( $student, $student->membership, $contract ) ) { continue; } ?>
+							<option value="<?php echo esc_attr( $contract->ID ) ?>" <?php selected( $student->membership->contract_id, $contract->ID ) ?>><?php echo esc_html( $contract->title ) ?></option>
 						<?php endforeach; ?>
 					</select>
 					<div class="dojo-clear-space"></div>

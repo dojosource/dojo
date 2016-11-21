@@ -404,6 +404,38 @@ Phone: '.$_POST['phone']
 		wp_redirect( admin_url( 'admin.php?page=dojo-documents' ) );
 	}
 
+	public function ajax_change_student_contract( $is_logged_in ) {
+		$this->require_admin();
+
+		if ( isset( $_POST['student'] ) && isset( $_POST['contract'] ) ) {
+			// get student
+			$student = $this->model()->get_student( $_POST['student'] );
+			if ( null == $student ) {
+				return 'Student not found';
+			}
+
+			// get current membership for given student
+			$membership = $this->model()->get_student_membership( $_POST['student'] );
+			if ( null === $membership ) {
+				return 'Student does not have an active membership';
+			}
+
+			// validate contract we are switching to
+			$contract = $this->model()->get_contract( $_POST['contract'] );
+			if ( ! $this->is_valid_student_contract( $student, $membership, $contract ) ) {
+				return 'Invalid contract for this student';
+			}
+
+			// good to go, update the membership
+			$this->model()->update_membership( $membership->ID, array(
+				'contract_id' => $_POST['contract'],
+			) );
+			return 'success';
+		}
+
+		return 'Invalid request';
+	}
+
 	public function ajax_save_student( $is_logged_in ) {
 		if ( ! $is_logged_in ) {
 			return 'Access denied';
@@ -1092,6 +1124,7 @@ Membership: ' . $student->contract->title . '
 					$this->selected_student = $this->model()->get_student( $_GET['student'] );
 					$this->selected_student->contract = $this->model()->get_contract( $this->selected_student->contract_id );
 					$this->rank_types = $this->model()->get_rank_types();
+					$this->contracts = $this->get_contracts();
 					foreach ( $this->rank_types as $index => $rank_type ) {
 						$ranks = $this->model()->get_ranks( $rank_type->ID );
 						if ( is_array( $ranks ) ) {
@@ -1494,6 +1527,66 @@ Membership: ' . $student->contract->title . '
 	}
 
 	/**
+	 * Verify contract is active and student meets contract requirements.
+	 * Also checks programs available from contract and if no programs exist with compatible age
+	 * requirements then will consider the contract invalid for the student.
+	 *
+	 * @param $student Student record
+	 * @param $current_membership record
+	 * @param $contract record
+	 *
+	 * @return bool
+	 */
+	public function is_valid_student_contract( $student, $current_membership, $contract ) {
+		if ( null === $contract ) {
+			return false;
+		}
+
+		if ( $current_membership->contract_id === $contract->ID ) {
+			return true;
+		}
+
+		// make sure contract is active
+		if ( ! $contract->is_active ) {
+			return false;
+		}
+
+		// check contract membership restrictions
+		if ( $this->is_status_past_submitted( $current_membership->status ) && $contract->new_memberships_only ) {
+			return false;
+		}
+		if ( ! $this->is_status_past_submitted( $current_membership->status ) && $contract->continuing_memberships_only ) {
+			return false;
+		}
+
+		// get contract programs
+		$programs = $this->model()->get_contract_programs( $contract->ID );
+
+		// check age limits of programs to see if student qualifies for at least one
+		$age = $this->dob_to_age( $student->dob );
+		$does_qualify = false;
+		foreach ( $programs as $program ) {
+			if ( null !== $program->min_age && 0 !== $program->min_age ) {
+				if ( $age < $program->min_age ) {
+					continue;
+				}
+			}
+			if ( null != $program->max_age && 0 != $program->max_age ) {
+				if ( $age > $program->max_age ) {
+					continue;
+				}
+			}
+			$does_qualify = true;
+			break;
+		}
+		if ( ! $does_qualify ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Check if given status is active in the sense that the student may continue to participate
 	 *
 	 * @param string $status
@@ -1535,6 +1628,20 @@ Membership: ' . $student->contract->title . '
 			self::MEMBERSHIP_NA         != $status &&
 			self::MEMBERSHIP_PENDING    != $status &&
 			self::MEMBERSHIP_ENDED      != $status
+			;
+	}
+
+	/**
+	 * Check if status is past a submitted state, includes ended.
+	 *
+	 * @param $status
+	 * @return bool
+	 */
+	public function is_status_past_submitted( $status ) {
+		return
+			self::MEMBERSHIP_NA         != $status &&
+			self::MEMBERSHIP_PENDING    != $status &&
+			self::MEMBERSHIP_SUBMITTED  != $status
 			;
 	}
 
@@ -1749,6 +1856,31 @@ Membership: ' . $student->contract->title . '
 
 		// return formatted with zero padding
 		return $this->date( 'm/d/Y', strtotime( $month . '/' . $day . '/' .$year ) );
+	}
+
+	/**
+	 * Convert date of birth to age
+	 *
+	 * @param string $dob
+	 * @return int
+	 */
+	public function dob_to_age( $dob ) {
+		$dob  = strtotime( $dob );
+		$dob_month = (int) $this->date( 'n', $dob );
+		$dob_day   = (int) $this->date( 'j', $dob );
+		$dob_year  = (int) $this->date( 'Y', $dob );
+
+		$time = time();
+		$month = (int) $this->date( 'n', $time );
+		$day   = (int) $this->date( 'j', $time );
+		$year  = (int) $this->date( 'Y', $time );
+
+		$age = $year - $dob_year;
+		if ( $month < $dob_month || ( $month == $dob_month && $day < $dob_day) ) {
+			$age --;
+		}
+
+		return $age;
 	}
 
 	public function get_charge_date( $day )

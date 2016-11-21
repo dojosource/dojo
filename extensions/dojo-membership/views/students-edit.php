@@ -23,11 +23,9 @@ wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryu
 		<p>Applying for membership: <strong><?php echo esc_html( $student->contract->title ) ?></strong></p>
 		<?php echo apply_filters( 'dojo_membership_admin_student_application', $this->render( 'admin-student-application' ), $student ) ?>
 	</div>
-	<?php elseif (Dojo_Membership::MEMBERSHIP_DUE == $student->status || Dojo_Membership::MEMBERSHIP_CANCELED_DUE == $student->status ) : ?>
+	<?php elseif ( $this->is_status_active( $student->status ) ) : ?>
 	<div class="dojo-block">
-		<h2>Membership Alert</h2>
-		<p>Membership: <strong><?php echo esc_html( $student->contract->title ) ?></strong></p>
-		<?php echo apply_filters( 'dojo_membership_admin_student_due', $this->render( 'admin-student-due' ), $student ) ?>
+		<?php echo apply_filters( 'dojo_membership_admin_student_contract', $this->render( 'admin-student-contract' ), $student ) ?>
 	</div>
 	<?php endif; ?>
 

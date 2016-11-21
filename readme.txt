@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: martial arts, school, club, dojo, karate, judo, jiu jitsu
 Requires at least: 4.0
 Tested up to: 4.6.1
-Stable tag: 0.21
+Stable tag: 0.22
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,7 +71,7 @@ To view notifications and respond to membership applications go to My Dojo -> Da
 
 = Why am I not seeing the member page at /members? =
 
-Make sure your permalinks settings at Settings -> Permalinks are not set to, "Plain".
+Make sure your permalinks settings at Settings -> Permalinks are **NOT** set to, "Plain".
 
 = How do I get the free Invoices add-on from Dojo Source? =
 
@@ -88,6 +88,14 @@ Make sure your permalinks settings at Settings -> Permalinks are not set to, "Pl
 3. Get notifications on the admin dashboard when new membership applications come in.
 
 == Changelog ==
+
+= 0.22 =
+* Added option to change existing contract for a student.
+* No longer displaying contract options for students that are not applicable to that student.
+* Fixed issues with downloading add-ons.
+
+= 0.21 =
+* Fixed special cases where nonces in ajax calls were causing it to break.
 
 = 0.20 =
 * Initial release to WordPress!
