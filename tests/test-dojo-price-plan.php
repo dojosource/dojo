@@ -37,11 +37,11 @@ class Test_Dojo_Price_Plan extends WP_UnitTestCase {
 	 */
 	function test_post_handling_family() {
 		$_POST += array(
-			'family_pricing'    => 1,
-			'price_1'           => '42.55',
-			'count_1'           => 2,
-			'price_2'           => '11.23',
-			'count_2'           => 0,
+			'family_pricing'    		=> 1,
+			'family_pricing_price_1'    => '42.55',
+			'family_pricing_count_1'    => 2,
+			'family_pricing_price_2'    => '11.23',
+			'family_pricing_count_2'    => 0,
 		);
 
 		$plan = new Dojo_Price_Plan();
