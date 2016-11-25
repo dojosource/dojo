@@ -17,7 +17,7 @@ if ( null === $contract ) {
 }
 ?>
 
-<div class="wrap dojo">
+<div class="wrap dojo dojo-contracts-edit">
 	<h1><?php echo $new ? 'New Contract' : 'Edit Contract' ?></h1>
 
 	<form name="post" action="<?php echo esc_attr( $this->ajax( 'save_contract' ) ) ?>" method="post" id="post" autocomplete="off">
@@ -145,16 +145,4 @@ if ( null === $contract ) {
 	</form>
 </div>
 
-<script>
-jQuery(function($) {
-	$('#cancellation_policy').change(function() {
-		if ('days' == $(this).val()) {
-			$('.cancellation-days-row').show();
-		}
-		else {
-			$('.cancellation-days-row').hide();
-		}
-	});
-});
-</script>
 

@@ -12,6 +12,11 @@ final class Dojo extends Dojo_WP_Base {
 	private $custom_page_content;
 	private $head_complete = false;
 
+	private $client_params = array(
+		'ajax'   => array(),
+		'params' => array(),
+	);
+
 	/**
 	 * Root path of plugin ending with slash
 	 *
@@ -41,6 +46,8 @@ final class Dojo extends Dojo_WP_Base {
 			'wp_ajax_dojo',
 			'wp_ajax_nopriv_dojo',
 			'dojo_register_settings',
+			'wp_footer',
+			'admin_footer',
 		) );
 
 		$this->register_filters( array(
@@ -141,6 +148,25 @@ final class Dojo extends Dojo_WP_Base {
 	}
 
 	/**
+	 * Enqueue an ajax url for client side javascript to access via dojo.ajax(target, method)
+	 *
+	 * @param string $endpoint_id Class_Name::method
+	 * @param $url
+	 */
+	public function enqueue_ajax( $endpoint_id, $url ) {
+		$this->client_params['ajax'][$endpoint_id] = $url;
+	}
+
+	/**
+	 * Enqueue a parameter for client side javascript to access via dojo.param(name)
+	 * @param $name
+	 * @param $value
+	 */
+	public function enqueue_param( $name, $value ) {
+		$this->client_params['params'][$name] = $value;
+	}
+
+	/**
 	 * Register custom pages
 	 *
 	 * @param string $slug Root level slug
@@ -224,11 +250,31 @@ final class Dojo extends Dojo_WP_Base {
 	public function handle_wp_enqueue_scripts() {
 		wp_register_style( 'dojo_style', $this->url_of( 'css/dojo-style.css' ) );
 		wp_enqueue_style( 'dojo_style' );
+
+		$this->enqueue_dojo_js();
 	}
 
 	public function handle_admin_enqueue_scripts() {
 		wp_register_style( 'dojo_admin_style', $this->url_of( 'css/dojo-admin-style.css' ) );
 		wp_enqueue_style( 'dojo_admin_style' );
+
+		$this->enqueue_dojo_js();
+	}
+
+	private function enqueue_dojo_js() {
+		// enqueue main dojo javascript
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			$js_path = $this->url_of( 'js/dist/dojo.js' );
+		} else {
+			$js_path = $this->url_of( 'js/dist/dojo.min.js' );
+		}
+		wp_enqueue_script(
+			'dojo',
+			$js_path,
+			array( 'jquery' ),
+			null,
+			true
+		);
 	}
 
 	public function handle_generate_rewrite_rules( $wp_rewrite ) {
@@ -299,7 +345,6 @@ final class Dojo extends Dojo_WP_Base {
 	}
 
 	public function handle_dojo_register_settings( $settings ) {
-		$settings = Dojo_Settings::instance();
 		$key_set = ( '' != $settings->get( 'site_key' ) );
 		if ( ! $key_set ) {
 			$adon_subtitle = '
@@ -333,6 +378,23 @@ final class Dojo extends Dojo_WP_Base {
 		if ( $key_set ) {
 			$settings->register_option( 'dojo_extension_section', 'manage_extensions', 'Manage Add-Ons', $this );
 		}
+	}
+
+	public function handle_wp_footer() {
+		// add parameters to get picked up by client side js dojo object
+		wp_localize_script(
+			'dojo',
+			'dojo_params',
+			$this->client_params
+		);
+	}
+
+	public function handle_admin_footer() {
+		wp_localize_script(
+			'dojo',
+			'dojo_params',
+			$this->client_params
+		);
 	}
 
 

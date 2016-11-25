@@ -6,6 +6,9 @@ $is_new = $this->is_new;
 $ready_to_enroll = $this->ready_to_enroll;
 $students = $this->students;
 $notifications = $this->notifications;
+
+$this->enqueue_param( 'students_edit_url', $this->membership_url( 'students/edit' ) );
+$this->enqueue_param( 'enroll_url', $this->membership_url( 'enroll' ) );
 ?>
 
 <?php if ( $is_new ) : ?>
@@ -23,7 +26,7 @@ $notifications = $this->notifications;
 <div class="dojo-clear-space"></div>
 <?php endif; ?>
 
-<div class="dojo-container">
+<div class="dojo-container dojo-user-membership">
 	<div class="dojo-row">
 		<div class="dojo-col-md-6">
 			<h3>Students</h3>
@@ -82,19 +85,3 @@ $notifications = $this->notifications;
 	</div>
 </div>
 
-<script>
-jQuery(function($) {
-	$('.dojo-add-student').click(function() {
-		window.location = '<?php echo $this->membership_url( 'students/edit' ) ?>';
-	});
-
-	$('.dojo-students .dojo-select-list-item').click(function() {
-		var id = $(this).attr('data-id');
-		window.location = '<?php echo $this->membership_url( 'students/edit' ) ?>?student=' + id;
-	});
-
-	$('.dojo-enroll').click(function() {
-		window.location = '<?php echo $this->membership_url( 'enroll' ) ?>';
-	});
-});
-</script>

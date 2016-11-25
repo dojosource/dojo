@@ -14,7 +14,7 @@ wp_enqueue_script( 'jquery-ui-datepicker' );
 wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css' );
 ?>
 
-<div class="wrap dojo">
+<div class="wrap dojo dojo-students-edit">
 	<h1><?php echo esc_html( $student_name ) ?></h1>
 
 	<?php if ( Dojo_Membership::MEMBERSHIP_SUBMITTED == $student->status || Dojo_Membership::MEMBERSHIP_PAID == $student->status ) : ?>
@@ -85,13 +85,3 @@ wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryu
 	</form>
 </div>
 
-<script>
-jQuery(function($) {
-	var today = new Date();
-	$('input[name=dob]').datepicker({
-		changeMonth: true,
-		changeYear: true,
-		yearRange: '1930:' + today.getFullYear()
-	});
-});
-</script>

@@ -47,8 +47,4 @@ if ( null === $document ) {
 	</form>
 </div>
 
-<script>
-jQuery(function($) {
-});
-</script>
 

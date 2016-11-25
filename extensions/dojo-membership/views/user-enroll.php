@@ -8,9 +8,12 @@ $contracts = $this->contracts;
 $line_items = $this->line_items;
 
 $checkout_table = new Dojo_Checkout_Table( $line_items, array( 'render_simple_total' => true ) );
+
+$this->enqueue_param( 'contract_url', $this->membership_url( 'enroll/details?contract=' ) );
+$this->enqueue_ajax( 'save_enrollment' );
 ?>
 
-<div class="dojo-container">
+<div class="dojo-container dojo-user-enroll">
 	<div class="dojo-row">
 		<div class="dojo-col-md-7">
 			<?php if ( 0 != count( $unenrolled_students ) ) : ?>
@@ -109,46 +112,5 @@ $checkout_table = new Dojo_Checkout_Table( $line_items, array( 'render_simple_to
 	</div>
 </div>
 
-<script>
-jQuery(function($) {
-	$('#dojo-enroll select').change(function() {
-		updateCheckout(true);
-	});
-
-	$('.dojo-membership-details').click(function() {
-		window.location = '<?php echo $this->membership_url( 'enroll/details?contract=' ) ?>' + $(this).attr('data-id');
-	});
-
-	function updateCheckout(doPost) {
-		var data = {};
-		if (doPost) {
-			$('#dojo-enroll select').each(function() {
-				var selection = $(this).val();
-				data[$(this).attr('name')] = $(this).val();
-			});
-		}
-		else {
-			data.refresh_only = true;
-		}
-		$.post('<?php echo $this->ajax('save_enrollment') ?>', data, function(response) {
-			var data = eval('(' + response + ')');
-			dojoCheckoutSetLineItems(data.line_items);
-			if (0 == data.line_items.length) {
-				$('.dojo-monthly-pricing').hide();
-				$('.dojo-registration-fee').hide();
-			}
-			else {
-				$('.dojo-monthly-pricing').show();
-				$('.dojo-registration-fee').show();
-			}
-			var reg_fee = parseInt(data.reg_fee) / 100;
-			$('.dojo-registration-amount').text('$' + reg_fee.toFixed(2));
-		});
-	};
-
-	// refresh to correct ajax state after browser back button
-	updateCheckout(false);
-});
-</script>
 
 

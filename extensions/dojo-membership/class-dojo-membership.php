@@ -115,6 +115,19 @@ class Dojo_Membership extends Dojo_Extension {
 		return 'Updates complete';
 	}
 
+	public function ajax_login() {
+		$user = wp_signon( array(
+			'user_login'    => $_POST['login'],
+			'user_password' => $_POST['password'],
+			'remember'      => isset( $_POST['remember'] ),
+		) );
+
+		if ( is_wp_error( $user ) ) {
+			return $user->get_error_message();
+		}
+		return 'success';
+	}
+
 	public function ajax_signup() {
 		if ( '1' != $this->get_setting( 'membership_enable_username' ) ) {
 			$_POST['username'] = $_POST['email'];
@@ -796,6 +809,7 @@ Membership: ' . $student->contract->title . '
 			''                              // section subtitle
 		);
 
+		$settings->register_option( 'dojo_member_signup_section', 'membership_use_wp_login', 'Login Screen', $this );
 		$settings->register_option( 'dojo_member_signup_section', 'membership_enable_username', 'Enable Username', $this );
 		$settings->register_option( 'dojo_member_signup_section', 'membership_slug', 'Membership Url Slug', $this );
 		$settings->register_option( 'dojo_member_signup_section', 'membership_signup_header', 'Sign Up Header', $this );
@@ -951,6 +965,10 @@ Membership: ' . $student->contract->title . '
 			'textarea_name' => 'dojo_options[membership_signup_header]',
 			'textarea_rows' => 8,
 		) );
+	}
+
+	public function render_option_membership_use_wp_login() {
+		$this->render_option_checkbox( 'membership_use_wp_login', 'Use WordPress Login Screen' );
 	}
 
 	public function render_option_membership_enable_username() {
@@ -1179,7 +1197,11 @@ Membership: ' . $student->contract->title . '
 		switch ( $path ) {
 			case '' :
 				if ( ! is_user_logged_in() ) {
-					echo $this->render( 'logged-out' );
+					if ( isset( $_GET['login'] ) ) {
+						echo $this->render('login');
+					} else {
+						echo $this->render( 'logged-out' );
+					}
 				} else {
 					$user_id = wp_get_current_user()->ID;
 					$this->students = $this->model()->get_user_students( $user_id );

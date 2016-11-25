@@ -45,6 +45,8 @@ class Dojo_Checkout_Table extends Dojo_WP_Base {
 	}
 
 	public function render() {
+		Dojo::instance()->enqueue_param( 'line_items', $this->line_items );
+
 		$total = 0;
 		foreach ( $this->line_items as $index => $line_item ) {
 			$total += $line_item['amount_cents'];
@@ -94,50 +96,6 @@ class Dojo_Checkout_Table extends Dojo_WP_Base {
 				</tbody>
 			</table>
 		</div>
-		<script>
-			var $dojoLineItemTemplate;
-
-			function dojoCheckoutSetLineItems(lineItems) {
-				var $ = jQuery;
-				var total = 0;
-				$('.dojo-checkout-item').not('.dojo-template').remove();
-
-				if (0 == lineItems.length) {
-					$('.dojo-checkout-items').hide();
-				}
-				else {
-					$('.dojo-checkout-items').show();
-					for (var index in lineItems) {
-						var lineItem = lineItems[index];
-						var price = parseInt(lineItem.amount_cents) / 100;
-						total += price;
-						var $item = $('.dojo-template.dojo-checkout-item').clone();
-						$item.removeClass('dojo-template');
-						$item.find('.dojo-item-description').text(lineItem.description);
-						$item.find('.dojo-item-amount').text('$' + price.toFixed(2));
-						$item.attr('data-id', lineItem.id);
-						$item.data('line-item', lineItem);
-						$('.dojo-checkout-items .dojo-totals').before($item);
-						$item.show();
-					}
-					$('.dojo-totals .dojo-item-amount').text('$' + total.toFixed(2));
-				}
-			}
-
-			function dojoCheckoutGetLineItems() {
-				var $ = jQuery;
-				var lineItems = [];
-				$('.dojo-checkout-item').not('.dojo-template').each(function() {
-					lineItems.push($(this).data('line-item'));
-				});
-				return lineItems;
-			}
-
-			jQuery(function($) {
-				$dojoLineItemTemplate = $('.dojo-template.dojo-checkout-item');
-				dojoCheckoutSetLineItems(<?php echo json_encode( $this->line_items ) ?>);
-			});
-		</script>
 		<?php
 	}
 }

@@ -5,7 +5,7 @@ $pending_students = $this->pending_students;
 $contracts = $this->contracts;
 ?>
 
-<div class="dojo-container">
+<div class="dojo-container dojo-user-enroll-apply">
 	<?php if ( 0 != count( $pending_students ) ) : ?>
 
 	<form name="post" action="<?php echo esc_attr( $this->ajax( 'submit_application' ) ) ?>" method="post" id="post" autocomplete="off">
@@ -80,22 +80,5 @@ $contracts = $this->contracts;
 	<?php endif; ?>
 </div>
 
-<script>
-jQuery(function($) {
-	$('.submit-application').click(function() {
-		var unchecked = $('.terms-checkbox').not(':checked');
-		if (unchecked.length) {
-			$('.error-message').text('Please indicate that you have read and agree with the terms and conditions for each membership that requires it.');
-			$('.error-container').show();
-		}
-		else {
-			$('.error-container').hide();
-			$('.submit-application').hide();
-			$('.dojo-please-wait').show();
-			$('#post').submit();
-		}
-	});
-});
-</script>
 
 

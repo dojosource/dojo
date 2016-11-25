@@ -122,14 +122,88 @@ class Dojo_Extension extends Dojo_WP_base {
 	}
 
 	/**
-	 * Renders a view from the views subfolder of the derived extension
+	 * Enqueues ajax urls for use in client side javascript. This may be called any time before wp_footer action.
+	 * Example server side from membership extension:
+	 *   $this->enqueue_ajax( 'my_method' );
+	 *
+	 * Example in javascript:
+	 *   $.post( dojo.ajax( 'membership', 'my_method' ), ... );
+	 *
+	 * @param array | string $methods
+	 */
+	protected function enqueue_ajax( $methods ) {
+		if ( ! is_array( $methods ) ) {
+			$methods = array( $methods );
+		}
+		foreach ( $methods as $method ) {
+			$url = $this->ajax( $method );
+			$target = strtolower( substr( get_class( $this ), 5 ) );
+			Dojo::instance()->enqueue_ajax( $target . '::' . $method, $url );
+		}
+	}
+
+	/**
+	 * Enqueues a parameter for use in client side javascript as dojo.param(name)
+	 *
+	 * @param $name
+	 * @param $value
+	 */
+	protected function enqueue_param( $name, $value ) {
+		Dojo::instance()->enqueue_param( $name, $value );
+	}
+
+	/**
+	 * Enqueues the javascript for this extension to the footer.
+	 * If in admin screens will enqueue both regular and admin js if available.
+	 * This is automatically called when any view is rendered on this extension.
+	 */
+	protected function enqueue_js() {
+		static $js_enqueued = false;
+
+		if ( ! $js_enqueued ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				$file_extension = '.js';
+			} else {
+				$file_extension = '.min.js';
+			}
+			$file = $this->path( 'js/dist/extension' . $file_extension );
+			$file_admin = $this->path( 'js/dist/extension-admin' .$file_extension );
+			$url = $this->url( 'js/dist/extension' . $file_extension );
+			$url_admin = $this->url( 'js/dist/extension-admin' .$file_extension );
+
+			if ( file_exists( $file ) ) {
+				wp_enqueue_script(
+					get_class( $this ),
+					$url,
+					array( 'jquery', 'jquery-ui-datepicker' ),
+					null,
+					true
+				);
+			}
+			if ( is_admin() && file_exists( $file_admin ) ) {
+				wp_enqueue_script(
+					get_class( $this ) . '-admin',
+					$url_admin,
+					array( 'jquery' ),
+					null,
+					true
+				);
+			}
+			$js_enqueued = true;
+		}
+	}
+
+	/**
+	 * Renders a view from the views subfolder of the derived extension.
+	 * Rendering any view will cause the javascript for this extension to be enqueued in the footer.
 	 *
 	 * @param string $view Name of the view to render
-	 * @param array $data Optional array of parameters to include as $data in the view context
 	 *
 	 * @return string Rendered content
 	 */
-	protected function render( $view, $data = array() ) {
+	protected function render( $view ) {
+		$this->enqueue_js();
+
 		// add settings to view context
 		$settings = Dojo_Settings::instance();
 		$path = $this->path() . 'views/';

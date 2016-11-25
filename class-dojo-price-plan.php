@@ -150,7 +150,7 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
 			$rule_count = 1;
 		}
 		?>
-		<div class="dojo-block <?php echo $container_class ?>">
+		<div class="dojo-block dojo-price-plan <?php echo $container_class ?>" data-id="<?php echo $ID ?>">
 			<label for="<?php echo $ID ?>">
 				<input type="checkbox" id="<?php echo $ID ?>" name="<?php echo $ID ?>" value="1" <?php checked( $family_pricing_enabled, '1' ) ?>>
 				Enable family pricing
@@ -209,54 +209,6 @@ class Dojo_Price_Plan extends Dojo_WP_Base {
 			</div>
 		</div>
 
-		<script>
-		jQuery(function($) {
-		  function onCountChange(select) {
-			var ruleBlock = select.closest('.form-table');
-			var rule = parseInt(ruleBlock.attr('data-rule'));
-			if (select.val() != 0) {
-			  rule++;
-			  var next = $('.<?php echo $container_class ?> table[data-rule="' + rule + '"]');
-			  if (0 == next.length) {
-				var newBlock = ruleBlock.clone();
-				ruleBlock.after(newBlock);
-				newBlock.find('input').val('');
-				newBlock.find('input').attr('name', '<?php echo $ID ?>_price_' + rule);
-				newBlock.find('.price-count').val('0');
-				newBlock.find('.price-count').attr('name', '<?php echo $ID ?>_count_' + rule);
-				newBlock.find('.dojo-plan-cost').text('then cost');
-				newBlock.find('.dojo-plan-for').text('for next');
-				newBlock.attr('data-rule', rule);
-				newBlock.find('.price-count').change(function() {
-				  onCountChange($(this));
-				});
-			  }
-			  else {
-				next.show();
-				onCountChange(next.find('select'));
-			  }
-			}
-			else {
-			  ruleBlock.nextAll().hide();
-			}
-		  }
-
-		  $('.<?php echo $container_class ?> .price-count').change(function() {
-			onCountChange($(this));
-		  });
-
-		  $('.<?php echo $container_class ?> input[name=<?php echo $ID ?>]').change(function() {
-			if ($(this).is(':checked')) {
-				$('.<?php echo $container_class ?> .simple-pricing').hide();
-				$('.<?php echo $container_class ?> .family-pricing').show();
-			}
-			else {
-				$('.<?php echo $container_class ?> .family-pricing').hide();
-				$('.<?php echo $container_class ?> .simple-pricing').show();
-			}
-		  });
-		});
-		</script>
 		<?php
 	}
 

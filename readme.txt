@@ -89,6 +89,11 @@ Make sure your permalinks settings at Settings -> Permalinks are **NOT** set to,
 
 == Changelog ==
 
+= 0.23 =
+* Added login screen under members url with new option in settings to use built-in wp login.
+* Fixed link back when using wp login.
+* Optimized handling of javascript
+
 = 0.22 =
 * Added option to change existing contract for a student.
 * No longer displaying contract options for students that are not applicable to that student.

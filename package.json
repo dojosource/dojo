@@ -1,0 +1,56 @@
+{
+  "name": "dojo-build",
+  "version": "1.0.0",
+  "description": "Build scripts for Dojo core plugin",
+  "scripts": {
+    "lint": "npm run lint:core && npm run lint:membership",
+    "lint:core": "eslint js/src",
+    "lint:membership": "eslint extensions/dojo-membership/js/src && eslint extensions/dojo-membership/js/src-admin",
+    "uglify": "npm run uglify:core && npm run uglify:membership && npm run uglify:membership-admin",
+    "uglify:core": "mkdirp js/dist && uglifyjs js/src/*.js -b -o js/dist/dojo.js && uglifyjs js/src/*.js -m -c -o js/dist/dojo.min.js",
+    "uglify:membership": "mkdirp extensions/dojo-membership/js/dist && uglifyjs extensions/dojo-membership/js/src/*.js -b -o extensions/dojo-membership/js/dist/extension.js && uglifyjs extensions/dojo-membership/js/src/*.js -m -c -o extensions/dojo-membership/js/dist/extension.min.js",
+    "uglify:membership-admin": "mkdirp extensions/dojo-membership/js/dist && uglifyjs extensions/dojo-membership/js/src-admin/*.js -b -o extensions/dojo-membership/js/dist/extension-admin.js && uglifyjs extensions/dojo-membership/js/src-admin/*.js -m -c -o extensions/dojo-membership/js/dist/extension-admin.min.js",
+    "build": "npm run build:corejs && npm run build:membershipjs",
+    "build:corejs": "npm run lint:core && npm run uglify:core",
+    "build:membershipjs": "npm run lint:membership && npm run uglify:membership && npm run uglify:membership-admin",
+    "watch": "parallelshell 'npm run watch:corejs' 'npm run watch:membershipjs'",
+    "watch:corejs": "onchange 'js/src/*.js' -- npm run build:corejs",
+    "watch:membershipjs": "onchange 'extensions/dojo-membership/js/src/*.js' 'extensions/dojo-membership/js/src-admin/*.js' -- npm run build:membershipjs"
+  },
+  "devDependencies": {
+    "eslint": "^3.10.2",
+    "mkdirp": "^0.5.1",
+    "onchange": "^3.0.2",
+    "parallelshell": "^2.0.0",
+    "uglify-js": "^2.7.4"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "jquery": true
+    },
+    "globals": {
+      "dojo": true,
+      "dojo_params": true
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+      "indent": [
+        "error",
+        2
+      ],
+      "linebreak-style": [
+        "error",
+        "unix"
+      ],
+      "quotes": [
+        "error",
+        "single"
+      ],
+      "semi": [
+        "error",
+        "always"
+      ]
+    }
+  }
+}
