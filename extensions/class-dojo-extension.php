@@ -175,7 +175,7 @@ class Dojo_Extension extends Dojo_WP_base {
 				wp_enqueue_script(
 					get_class( $this ),
 					$url,
-					array( 'jquery', 'jquery-ui-datepicker' ),
+					$this->get_js_dependencies(),
 					null,
 					true
 				);
@@ -184,13 +184,17 @@ class Dojo_Extension extends Dojo_WP_base {
 				wp_enqueue_script(
 					get_class( $this ) . '-admin',
 					$url_admin,
-					array( 'jquery' ),
+					array(),
 					null,
 					true
 				);
 			}
 			$js_enqueued = true;
 		}
+	}
+
+	protected function get_js_dependencies() {
+		return array( 'jquery' );
 	}
 
 	/**

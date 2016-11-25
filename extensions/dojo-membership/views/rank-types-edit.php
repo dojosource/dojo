@@ -9,8 +9,6 @@ if ( ! $this->selected_rank_type ) {
 	$is_new = false;
 }
 
-wp_enqueue_script( 'jquery-ui-sortable' );
-
 $this->enqueue_ajax( 'delete_rank' );
 ?>
 

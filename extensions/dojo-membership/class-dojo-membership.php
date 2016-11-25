@@ -104,6 +104,18 @@ class Dojo_Membership extends Dojo_Extension {
 		return self::$instance;
 	}
 
+	/**
+	 * Override base class function to add js library dependencies
+	 *
+	 * @return array
+	 */
+	protected function get_js_dependencies() {
+		$dependencies = parent::get_js_dependencies();
+		$dependencies[] = 'jquery-ui-datepicker';
+		$dependencies[] = 'jquery-ui-sortable';
+		return $dependencies;
+	}
+
 
 	/**** Ajax Endpoints ****/
 
